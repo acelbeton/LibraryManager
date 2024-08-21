@@ -1,0 +1,132 @@
+<?php
+
+
+namespace App\Http\Controllers;
+
+use App\Models\Book;
+use App\Models\Author;
+use App\Models\Genre;
+use App\Models\Publisher;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Validator;
+
+class BookController extends Controller
+{
+    private function getCachedData()
+    {
+        $authors = Cache::remember('authors', 60*60, function() {
+            return Author::all();
+        });
+
+        $genres = Cache::remember('genres', 60*60, function() {
+            return Genre::all();
+        });
+
+        $publishers = Cache::remember('publishers', 60*60, function() {
+            return Publisher::all();
+        });
+
+        return compact('authors', 'genres', 'publishers');
+    }
+
+    public function index() {
+        $books = Book::with(['author', 'genre', 'publisher'])->get();
+        $cachedData = $this->getCachedData();
+        return view('books.create-book', array_merge(['books' => $books], $cachedData));
+    }
+
+    public function store(Request $request)
+    {
+        try {
+            $validatedData = $request->validate([
+                'title' => 'required|string|max:255',
+                'description' => 'nullable|string',
+                'author_id' => 'required|exists:authors,id',
+                'genre_id' => 'required|exists:genres,id',
+                'publisher_id' => 'required|exists:publishers,id',
+                'cover_image' => 'nullable|image|max:2048',
+            ]);
+
+            if ($request->hasFile('cover_image')) {
+                $validatedData['cover_image'] = $request->file('cover_image')->store('cover_images', 'public');
+            }
+
+            Book::create($validatedData);
+
+            $books = Book::with(['author', 'genre', 'publisher'])->get();
+            $cachedData = $this->getCachedData();
+            $html = view('partials.booksList', array_merge(['books' => $books], $cachedData))->render();
+
+            return response()->json(['success' => true, 'html' => $html], 201);
+        } catch (\Exception $e) {
+            \Log::error($e->getMessage());
+            return response()->json(['success' => false, 'message' => 'An unexpected error occurred. Please try again later.'], 500);
+        }
+    }
+
+    public function update(Request $request) {
+
+        try {
+            $validator = Validator::make($request->all(), [
+                'id' => 'required|exists:books,id',
+                'title' => 'required|string|max:255',
+                'description' => 'nullable|string',
+                'author_id' => 'required|exists:authors,id',
+                'genre_id' => 'required|exists:genres,id',
+                'publisher_id' => 'required|exists:publishers,id',
+                'cover_image' => 'nullable|image|max:2048',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json(['success' => false, 'errors' => 'Validation failed. Please check your input.'], 422);
+            }
+
+            $book = Book::findOrFail($request->id);
+
+            $book->title = $request->title;
+            $book->description = $request->description;
+            $book->author_id = $request->author_id;
+            $book->genre_id = $request->genre_id;
+            $book->publisher_id = $request->publisher_id;
+
+            if ($request->hasFile('cover_image')) {
+                $book->cover_image = $request->file('cover_image')->store('cover_images', 'public');
+            }
+
+            $book->save();
+
+            $books = Book::with(['author', 'genre', 'publisher'])->get();
+            $cachedData = $this->getCachedData();
+            $html = view('partials.booksList', array_merge(['books' => $books], $cachedData))->render();
+
+            return response()->json(['success' => true, 'html' => $html]);
+        } catch (\Exception $e) {
+            \Log::error($e->getMessage());
+            return response()->json(['success' => false, 'errors' => 'An unexpected error occurred. Please try again later.'], 500);
+        }
+    }
+
+    public function destroy(Request $request){
+
+        try {
+            $validator = Validator::make($request->all(), ['id' => 'required|exists:books,id']);
+
+            if($validator->fails()) {
+                return response()->json(['success' => false, 'errors' => 'There was an error with the deletion'], 422);
+            }
+
+            $book = Book::findOrFail($request->id);
+            $book->delete();
+
+            $books = Book::with(['author', 'genre', 'publisher'])->get();
+            $cachedData = $this->getCachedData();
+            $html = view('partials.booksList', array_merge(['books' => $books], $cachedData))->render();
+
+            return response()->json(['success' => true, 'html' => $html]);
+        } catch (\Exception $e) {
+            \Log::error($e->getMessage());
+            return response()->json(['success' => false, 'errors' => 'An unexpected error occurred. Please try again.'], 500);
+        }
+    }
+}
