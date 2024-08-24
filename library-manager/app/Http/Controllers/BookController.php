@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 use App\Models\Book;
 use App\Models\Author;
 use App\Models\Genre;
+use App\Models\Language;
 use App\Models\Publisher;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -27,13 +28,60 @@ class BookController extends Controller
             return Publisher::all();
         });
 
-        return compact('authors', 'genres', 'publishers');
+        $languages = Cache::remember('languages', 60*60, function() {
+            return Language::orderBy('language_name','asc')->get();
+        });
+
+        return compact('authors', 'genres', 'publishers', 'languages');
     }
 
     public function index() {
         $books = Book::with(['author', 'genre', 'publisher'])->get();
         $cachedData = $this->getCachedData();
         return view('books.create-book', array_merge(['books' => $books], $cachedData));
+    }
+
+    public function search(Request $request) {
+
+        $validator = Validator::make($request->all(), [
+           'search_term' => 'required|string|max:255',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'errors' => 'Validation failed. Please check your input.'], 422);
+        }
+
+        $searchTerm = $request->input('search_term');
+
+        $books = $this->searchBookQuery($searchTerm)
+            ->with(['author', 'genre', 'publisher', 'keywords'])
+            ->paginate(10);
+
+        $html = view('partials.booksList', compact('books'))->render();
+
+        if ($books->isEmpty()) {
+            return response()->json(['success' => false, 'html' => $html, 'errors' => 'No results found.']);
+        }
+
+        return response()->json(['success' => true, 'html' => $html]);
+    }
+
+    public function getSuggestions(Request $request) {
+        $validator = Validator::make($request->all(), [
+            'search_term' => 'required|string|max:255',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['html' => '']);
+        }
+
+        $searchTerm = $request->input('search_term');
+
+        $books = $this->searchBookQuery($searchTerm)->limit(5)->get();
+
+        $html = view('partials.suggestionsList', compact('books'))->render();
+
+        return response()->json(['html' => $html]);
     }
 
     public function store(Request $request)
@@ -128,5 +176,21 @@ class BookController extends Controller
             \Log::error($e->getMessage());
             return response()->json(['success' => false, 'errors' => 'An unexpected error occurred. Please try again.'], 500);
         }
+    }
+
+    private function searchBookQuery($searchTerm) {
+        return Book::where('title', 'LIKE', '%' . $searchTerm . '%')
+            ->orWhereHas('author', function ($query) use ($searchTerm) {
+                $query->where('name', 'LIKE', '%' . $searchTerm . '%');
+            })
+            ->orWhereHas('genre', function ($query) use ($searchTerm) {
+                $query->where('name', 'LIKE', '%' . $searchTerm . '%');
+            })
+            ->orWhereHas('publisher', function ($query) use ($searchTerm) {
+                $query->where('name', 'LIKE', '%' . $searchTerm . '%');
+            })
+            ->orWhereHas('keywords', function ($query) use ($searchTerm) {
+                $query->where('keyword', 'LIKE', '%' . $searchTerm . '%');
+            });
     }
 }

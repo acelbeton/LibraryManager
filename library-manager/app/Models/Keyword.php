@@ -16,4 +16,8 @@ class Keyword extends Model
     public function language() {
         return $this->belongsTo(Language::class);
     }
+
+    public function books() {
+        return $this->belongsToMany(Book::class, 'book_keywords', 'keyword_id', 'book_id');
+    }
 }

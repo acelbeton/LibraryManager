@@ -23,4 +23,7 @@ class Book extends Model
     public function publisher() {
         return $this->belongsTo(Publisher::class);
     }
+    public function keywords() {
+        return $this->belongsToMany(Keyword::class, 'book_keywords', 'book_id', 'keyword_id');
+    }
 }

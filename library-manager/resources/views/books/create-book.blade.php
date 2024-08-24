@@ -1,5 +1,3 @@
-<!-- resources/views/books/create.blade.php -->
-
 @extends('layouts.app')
 
 @section('content')
@@ -7,6 +5,9 @@
     <div class="container mt-5">
         <h2>Books</h2>
         <button class="btn btn-primary" data-toggle="modal" data-target="#createBookModal">Create New Book</button>
+    </div>
+    <div id="searchbar">
+        @include('partials.searchbar')
     </div>
 
     <div class="modal fade" id="createBookModal" tabindex="-1" role="dialog" aria-labelledby="createBookModalLabel" aria-hidden="true">
@@ -73,7 +74,7 @@
     </div>
 
     <div id="booksList">
-        @include('partials.booksList', ['books' => $books, 'authors' => $authors, 'genres' => $genres, 'publishers' => $publishers])
+        @include('partials.booksList')
     </div>
 
 @endsection
