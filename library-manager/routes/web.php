@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BookController;
+use App\Http\Controllers\TranslationController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -24,6 +25,8 @@ Route::post('/books/update', [BookController::class, 'update'])->name('books.upd
 Route::get('/books/suggestions', [BookController::class, 'getSuggestions'])->name('books.suggestions');
 
 Route::post('/books/search', [BookController::class, 'search'])->name('books.search');
+
+Route::post('books/translate/add', [TranslationController::class, 'store'])->name('books.translate.add');
 
 Route::get('/', function () {
     return view('welcome');

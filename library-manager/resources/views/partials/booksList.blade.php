@@ -47,9 +47,6 @@
                     <td>{{ $book->created_at->format('Y-m-d H:i') }}</td>
                     <td>{{ $book->updated_at->format('Y-m-d H:i') }}</td>
                     <td>
-                        <button class="btn btn-danger delete-book" data-id="{{ $book->id }}">Delete</button>
-                    </td>
-                    <td>
                         <button class="btn btn-warning update-book"
                                 data-id="{{ $book->id }}"
                                 data-title="{{ $book->title }}"
@@ -59,6 +56,12 @@
                                 data-publisher_id="{{ $book->publisher_id }}">
                             Update
                         </button>
+                    </td>
+                    <td>
+                        <button class="btn btn-primary add-translation" data-toggle="modal" data-target="#addTranslationModal" data-id="{{ $book->id }}">Add translation</button>
+                    </td>
+                    <td>
+                        <button class="btn btn-danger delete-book" data-id="{{ $book->id }}">Delete</button>
                     </td>
                 </tr>
             @endforeach
@@ -127,5 +130,44 @@
                 </div>
             </div>
         </div>
+
+
+            <div class="modal fade" id="addTranslationModal" tabindex="-1" role="dialog" aria-labelledby="addTranslationModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="addTranslationModalLabel">Add Translation</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <form class="translation-form" id="translate-book-form" action="{{ route('books.translate.add') }}" method="POST">
+                            @csrf
+                            <input type="hidden" name="book_id" id="translation-book-id">
+                            <div class="form-group">
+                                <label for="translate-title">Title:</label>
+                                <input type="text" name="translated_title" id="translate-title" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="translated_description">Description:</label>
+                                <textarea name="translated_description" id="translate-description" class="form-control"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <select name="language_id" id="language_id" class="form-control" required>
+                                @if(isset($genres))
+                                    @foreach($languages as $language)
+                                    <option value="{{ $language->id }}">{{ $language->language_name }}</option>
+                                    @endforeach
+                                @endif
+                            </select>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                <button type="submit" class="btn btn-primary">Add Translation</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
     @endif
 </div>

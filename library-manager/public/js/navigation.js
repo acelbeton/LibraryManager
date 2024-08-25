@@ -1,4 +1,10 @@
 $(document).ready(function() {
+    $('.add-translation').on('click', function() {
+        let bookId = $(this).data('id');
+        $('#translation-book-id').val(bookId); // Set the value of the hidden input field
+    });
+
+
     function initializeAll() {
         reinitializeEventListeners();
     }
@@ -6,6 +12,7 @@ $(document).ready(function() {
     function reinitializeEventListeners() {
         handleFormSubmission('#create-book-form', '#createBookModal', '#booksList');
         handleFormSubmission('#update-book-form', '#updateBookModal', '#booksList');
+        handleFormSubmission('#translate-book-form', '#addTranslationModal', '#booksList');
         handleDeletion('.delete-book', '/books/destroy', '#booksList');
         handleSearchSubmission('#search-book', '#booksList');
         handleUpdate('.update-book');
@@ -20,6 +27,7 @@ $(document).ready(function() {
 
             const $form = $(this);
             const formData = new FormData($form[0]);
+            const isTranslationForm = $form.hasClass('translation-form');
 
             $.ajax({
                 url: $form.attr('action'),
@@ -28,16 +36,41 @@ $(document).ready(function() {
                 processData: false,
                 contentType: false,
                 success: function(response) {
-                    if (response.html) {
+                    if (isTranslationForm && response.exists) {
+                        if (confirm(response.message)) {
+                            formData.append('update_existing', true);
+                            $.ajax({
+                                url: $form.attr('action'),
+                                method: 'POST',
+                                data: formData,
+                                processData: false,
+                                contentType: false,
+                                success: function(updateResponse) {
+                                    $(listId).html(updateResponse.html);
+                                    $(modalId).modal('hide');
+                                    $('.modal-backdrop').remove();
+                                    $form[0].reset();
+                                    $('#message').empty();
+                                    reinitializeEventListeners();
+                                    alert('Translation updated successfully.');
+                                },
+                                error: function(xhr) {
+                                    let errorMessage = 'There was an error updating the translation';
+                                    if (xhr.responseJSON && xhr.responseJSON.error) {
+                                        errorMessage = xhr.responseJSON.error;
+                                    }
+                                    $('#message').html('<div class="alert alert-danger">' + errorMessage + '</div>');
+                                }
+                            });
+                        }
+                    } else if (response.html) {
                         $(listId).html(response.html);
                         $(modalId).modal('hide');
                         $('.modal-backdrop').remove();
                         $form[0].reset();
                         $('#message').empty();
                         reinitializeEventListeners();
-                    }
-                    if (response.usersDropdown) {
-                        $('#usersDropdownContainer').html(response.usersDropdown);
+                        alert(response.message || 'Translation added successfully.');
                     }
                 },
                 error: function(xhr) {
@@ -45,11 +78,13 @@ $(document).ready(function() {
                     if (xhr.responseJSON && xhr.responseJSON.error) {
                         errorMessage = xhr.responseJSON.error;
                     }
-                    $('#message').html('<div class="alert alert-danger">' + errorMessage + '</div>')
+                    $('#message').html('<div class="alert alert-danger">' + errorMessage + '</div>');
                 }
             });
         });
     }
+
+
 
     function handleSearchSubmission(formId, listId) {
         $(formId).off('submit');
@@ -130,7 +165,6 @@ $(document).ready(function() {
         const suggestionsUrl = form.data('suggestions-url');
         $(document).on('keyup', inputId, function () {
             let query = $(this).val().trim();
-            console.log('User is typing:', query); // Debugging line
 
             if (query.length > 1) {
                 $.ajax({
@@ -138,7 +172,6 @@ $(document).ready(function() {
                     method: 'GET',
                     data: { search_term: query },
                     success: function(response) {
-                        console.log('AJAX response:', response); // Debugging line
                         $(listId).html(response.html);
                     },
                     error: function(xhr) {
@@ -156,6 +189,12 @@ $(document).ready(function() {
             $('#search_term').val(title);
             $('#suggestions').empty();
            $(listId).empty();
+        });
+
+        $('#search_term').on('focusout', function() {
+            setTimeout(function() {
+                $('#suggestions').empty();
+            }, 100);
         });
     }
 
