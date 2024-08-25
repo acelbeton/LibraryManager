@@ -1,6 +1,4 @@
 <div class="container">
-
-
     @if (session('success'))
         <div class="alert alert-success">
             {{ session('success') }}
@@ -21,31 +19,37 @@
         <table class="table table-bordered table-hover mt-4">
             <thead>
             <tr>
+                <th>Language</th>
                 <th>Title</th>
                 <th>Description</th>
                 <th>Author</th>
                 <th>Genre</th>
                 <th>Publisher</th>
                 <th>Cover Image</th>
-                <th>Created At</th>
-                <th>Updated At</th>
+                <th>Actions</th>
             </tr>
             </thead>
             <tbody>
             @foreach($books as $book)
-                <tr>
-                    <td>{{ $book->title }}</td>
-                    <td>{{ $book->description }}</td>
+                <tr id="book-{{ $book->id }}">
+                    <td>
+                        <select class="form-control select-language" data-book-id="{{ $book->id }}">
+                            <option value="default">Default</option>
+                            @foreach($languages as $language)
+                                <option value="{{ $language->id }}">{{ $language->language_name }}</option>
+                            @endforeach
+                        </select>
+                    </td>
+                    <td class="book-title">{{ $book->title }}</td>
+                    <td class="book-description">{{ $book->description }}</td>
                     <td>{{ $book->author->name }}</td>
-                    <td>{{ $book->genre->name }}</td>
+                    <td class="book-genre">{{ $book->genre->name }}</td>
                     <td>{{ $book->publisher->name }}</td>
                     <td>
                         @if ($book->cover_image)
                             <img src="{{ asset('storage/' . $book->cover_image) }}" alt="Cover Image" width="100" height="160">
                         @endif
                     </td>
-                    <td>{{ $book->created_at->format('Y-m-d H:i') }}</td>
-                    <td>{{ $book->updated_at->format('Y-m-d H:i') }}</td>
                     <td>
                         <button class="btn btn-warning update-book"
                                 data-id="{{ $book->id }}"
@@ -56,17 +60,19 @@
                                 data-publisher_id="{{ $book->publisher_id }}">
                             Update
                         </button>
-                    </td>
-                    <td>
-                        <button class="btn btn-primary add-translation" data-toggle="modal" data-target="#addTranslationModal" data-id="{{ $book->id }}">Add translation</button>
-                    </td>
-                    <td>
+                        <button class="btn btn-primary add-translation"
+                                data-toggle="modal"
+                                data-target="#addTranslationModal"
+                                data-id="{{ $book->id }}">
+                            Add Translation
+                        </button>
                         <button class="btn btn-danger delete-book" data-id="{{ $book->id }}">Delete</button>
                     </td>
                 </tr>
             @endforeach
             </tbody>
         </table>
+</div>
 
         <div class="modal fade" id="updateBookModal" tabindex="-1" role="dialog" aria-labelledby="updateBookModalLabel" aria-hidden="true">
             <div class="modal-dialog" role="document">

@@ -15,4 +15,8 @@ class Translation extends Model
         'translated_description',
         'language_id',
     ];
+
+    public function book(){
+        return $this->belongsTo(Book::class);
+    }
 }

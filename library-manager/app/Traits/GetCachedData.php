@@ -6,6 +6,7 @@ use App\Models\Author;
 use App\Models\Genre;
 use App\Models\Language;
 use App\Models\Publisher;
+use App\Models\Translation;
 use Illuminate\Support\Facades\Cache;
 
 trait GetCachedData
@@ -28,6 +29,10 @@ trait GetCachedData
             return Language::orderBy('language_name', 'asc')->get();
         });
 
-        return compact('authors', 'genres', 'publishers', 'languages');
+        $translations = Cache::remember('translations', 60 * 60, function () {
+            return Translation::all();
+        });
+
+        return compact('authors', 'genres', 'publishers', 'languages', 'translations');
     }
 }
