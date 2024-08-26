@@ -28,6 +28,8 @@ Route::post('/books/search', [BookController::class, 'search'])->name('books.sea
 
 Route::post('books/translate/add', [TranslationController::class, 'store'])->name('books.translate.add');
 
+Route::get('books/{book}/translate/{language}', [BookController::class, 'getTranslation']);
+
 Route::get('/', function () {
     return view('welcome');
 });

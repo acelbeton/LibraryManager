@@ -2,6 +2,7 @@
 
 @section('content')
 
+
     <div class="container mt-5">
         <h2>Books</h2>
         <button class="btn btn-primary" data-toggle="modal" data-target="#createBookModal">Create New Book</button>

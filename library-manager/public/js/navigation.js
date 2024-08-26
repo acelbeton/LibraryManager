@@ -1,9 +1,8 @@
 $(document).ready(function() {
     $('.add-translation').on('click', function() {
-        let bookId = $(this).data('id');
+        let bookId = $(this).data('book_id');
         $('#translation-book-id').val(bookId); // Set the value of the hidden input field
     });
-
 
     function initializeAll() {
         reinitializeEventListeners();
@@ -17,6 +16,18 @@ $(document).ready(function() {
         handleSearchSubmission('#search-book', '#booksList');
         handleUpdate('.update-book');
         handleSuggestions('#suggestions', '#search_term');
+
+        $('.select-language').on('change', function() {
+            let bookId = $(this).data('book-id');
+            let languageId = $(this).val();
+
+            if (languageId === "default") {
+                resetBookDataToDefault(bookId);
+            } else {
+
+                fetchTranslatedBookData(bookId, languageId);
+            }
+        });
     }
 
     function handleFormSubmission(formId, modalId, listId) {
@@ -37,7 +48,10 @@ $(document).ready(function() {
                 contentType: false,
                 success: function(response) {
                     if (isTranslationForm && response.exists) {
-                        if (confirm(response.message)) {
+
+                        $(modalId).modal('hide');
+
+                        showBootstrapConfirmation(response.message, function() {
                             formData.append('update_existing', true);
                             $.ajax({
                                 url: $form.attr('action'),
@@ -52,17 +66,17 @@ $(document).ready(function() {
                                     $form[0].reset();
                                     $('#message').empty();
                                     reinitializeEventListeners();
-                                    alert('Translation updated successfully.');
+                                    showToast('Translation updated successfully.', 'success');
                                 },
                                 error: function(xhr) {
                                     let errorMessage = 'There was an error updating the translation';
                                     if (xhr.responseJSON && xhr.responseJSON.error) {
                                         errorMessage = xhr.responseJSON.error;
                                     }
-                                    $('#message').html('<div class="alert alert-danger">' + errorMessage + '</div>');
+                                    showToast(errorMessage, 'error');
                                 }
                             });
-                        }
+                        });
                     } else if (response.html) {
                         $(listId).html(response.html);
                         $(modalId).modal('hide');
@@ -70,7 +84,7 @@ $(document).ready(function() {
                         $form[0].reset();
                         $('#message').empty();
                         reinitializeEventListeners();
-                        alert(response.message || 'Translation added successfully.');
+                        showToast(response.message, 'success');
                     }
                 },
                 error: function(xhr) {
@@ -78,7 +92,7 @@ $(document).ready(function() {
                     if (xhr.responseJSON && xhr.responseJSON.error) {
                         errorMessage = xhr.responseJSON.error;
                     }
-                    $('#message').html('<div class="alert alert-danger">' + errorMessage + '</div>');
+                    showToast(errorMessage, 'error');
                 }
             });
         });
@@ -111,7 +125,7 @@ $(document).ready(function() {
                   if (xhr.responseJSON && xhr.responseJSON.error) {
                       errorMessage = xhr.responseJSON.error;
                   }
-                  $('#message').html('<div class="alert alert-danger">' + errorMessage + '</div>')
+                  showToast(errorMessage, 'error');
               }
            });
         });
@@ -124,7 +138,7 @@ $(document).ready(function() {
             let $button = $(this);
             let itemId = $button.data('id');
 
-            if (confirm('Are you sure you want to delete this book?')) {
+            showBootstrapConfirmation('Are you sure you want to delete this book?', function() {
                 $button.prop('disabled', true);
 
                 $.ajax({
@@ -138,27 +152,36 @@ $(document).ready(function() {
                         if (response.html) {
                             $(listId).html(response.html);
                             reinitializeEventListeners();
+                            showToast('Book deleted successfully.', 'success');
                         }
                     },
                     error: function(xhr) {
                         let errorMessage = 'There was an error';
+
+                        console.log('xhr.responseJSON:', xhr.responseJSON);
+
                         if (xhr.responseJSON && xhr.responseJSON.errors) {
                             let errors = xhr.responseJSON.errors;
-                            let errorString = '';
-                            $.each(errors, function(key, value) {
-                                errorString += value[0] + '\n';
-                            });
-                            alert(errorString);
+
+                            if ($.isPlainObject(errors) || $.isArray(errors)) {
+                                let errorString = '';
+                                $.each(errors, function(key, value) {
+                                    errorString += value[0] + '\n';
+                                });
+                                showToast(errorString, 'error');
+                            } else {
+                                showToast(errors, 'error');
+                            }
                         } else {
-                            alert(errorMessage);
+                            showToast(errorMessage, 'error');
                         }
+                        $button.prop('disabled', false);
                     }
                 });
-            } else {
-                $button.prop('disabled', false);
-            }
+            });
         });
     }
+
 
     function handleSuggestions(listId, inputId) {
         const form = $('#search-book');
@@ -195,6 +218,29 @@ $(document).ready(function() {
             setTimeout(function() {
                 $('#suggestions').empty();
             }, 100);
+        });
+    }
+
+    function resetBookDataToDefault(bookId) {
+        let bookRow = $('#book-' + bookId);
+        let originalTitle = bookRow.data('original-title');
+        let originalDescription = bookRow.data('original-description');
+        bookRow.find('.book-title').text(originalTitle);
+        bookRow.find('.book-description').text(originalDescription);
+    }
+
+    function fetchTranslatedBookData(bookId, languageId) {
+        $.ajax({
+           url: '/books/' + bookId + '/translate/' + languageId,
+           method: 'GET',
+           success: function(response) {
+               let bookRow = $('#book-' + bookId);
+               bookRow.find('.book-title').text(response.translated_title);
+               bookRow.find('.book-description').text(response.translated_description);
+           },
+           error: function(xhr) {
+               console.error('ERROR SUGGESTION:', xhr);
+           }
         });
     }
 
@@ -241,7 +287,7 @@ $(document).ready(function() {
             },
             error: function(xhr) {
                 console.log('Error occurred:', xhr);
-                alert('An error occurred while loading the page.');
+                showToast('An error occurred while loading the page.', 'error');
             }
         });
     }

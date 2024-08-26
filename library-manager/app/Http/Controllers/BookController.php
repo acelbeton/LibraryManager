@@ -8,6 +8,7 @@ use App\Models\Author;
 use App\Models\Genre;
 use App\Models\Language;
 use App\Models\Publisher;
+use App\Models\Translation;
 use App\Traits\GetCachedData;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -88,10 +89,10 @@ class BookController extends Controller
             $cachedData = $this->getCachedData();
             $html = view('partials.booksList', array_merge(['books' => $books], $cachedData))->render();
 
-            return response()->json(['success' => true, 'html' => $html], 201);
+            return response()->json(['success' => true,'message' => 'Book added successfully!', 'html' => $html], 201);
         } catch (\Exception $e) {
             \Log::error($e->getMessage());
-            return response()->json(['success' => false, 'message' => 'An unexpected error occurred. Please try again later.'], 500);
+            return response()->json(['success' => false, 'error' => 'An unexpected error occurred. Please try again later.'], 500);
         }
     }
 
@@ -109,7 +110,7 @@ class BookController extends Controller
             ]);
 
             if ($validator->fails()) {
-                return response()->json(['success' => false, 'errors' => 'Validation failed. Please check your input.'], 422);
+                return response()->json(['success' => false, 'error' => 'Validation failed. Please check your input.'], 422);
             }
 
             $book = Book::findOrFail($request->id);
@@ -130,10 +131,10 @@ class BookController extends Controller
             $cachedData = $this->getCachedData();
             $html = view('partials.booksList', array_merge(['books' => $books], $cachedData))->render();
 
-            return response()->json(['success' => true, 'html' => $html]);
+            return response()->json(['success' => true, 'message' => 'Book updated successfully!', 'html' => $html]);
         } catch (\Exception $e) {
             \Log::error($e->getMessage());
-            return response()->json(['success' => false, 'errors' => 'An unexpected error occurred. Please try again later.'], 500);
+            return response()->json(['success' => false, 'error' => 'An unexpected error occurred. Please try again later.'], 500);
         }
     }
 
@@ -153,11 +154,25 @@ class BookController extends Controller
             $cachedData = $this->getCachedData();
             $html = view('partials.booksList', array_merge(['books' => $books], $cachedData))->render();
 
-            return response()->json(['success' => true, 'html' => $html]);
+            return response()->json(['success' => true,'message' => 'Book deleted successfully!', 'html' => $html]);
         } catch (\Exception $e) {
             \Log::error($e->getMessage());
             return response()->json(['success' => false, 'errors' => 'An unexpected error occurred. Please try again.'], 500);
         }
+    }
+
+    public function getTranslation(Book $book, $languageId) {
+        $translation = Translation::where('book_id', $book->id)
+            ->where('language_id', $languageId)
+            ->first();
+
+        if (!$translation) {
+            return response()->json(['success' => false, 'errors' => 'Translation not found.'], 404);
+        }
+
+        return response()->json(['success' => true, 'translated_title' => $translation->translated_title,
+            'translated_description' => $translation->translated_description,
+            ]);
     }
 
     private function searchBookQuery($searchTerm) {

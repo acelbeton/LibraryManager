@@ -31,7 +31,10 @@
             </thead>
             <tbody>
             @foreach($books as $book)
-                <tr id="book-{{ $book->id }}">
+                <tr id="book-{{ $book->id }}"
+                    data-original-title="{{ $book->title }}"
+                    data-original-description="{{ $book->description }}">
+
                     <td>
                         <select class="form-control select-language" data-book-id="{{ $book->id }}">
                             <option value="default">Default</option>
@@ -63,7 +66,7 @@
                         <button class="btn btn-primary add-translation"
                                 data-toggle="modal"
                                 data-target="#addTranslationModal"
-                                data-id="{{ $book->id }}">
+                                data-book_id="{{ $book->id }}">
                             Add Translation
                         </button>
                         <button class="btn btn-danger delete-book" data-id="{{ $book->id }}">Delete</button>
