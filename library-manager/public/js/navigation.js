@@ -1,7 +1,7 @@
 $(document).ready(function() {
     $('.add-translation').on('click', function() {
         let bookId = $(this).data('book_id');
-        $('#translation-book-id').val(bookId); // Set the value of the hidden input field
+        $('#translation-book-id').val(bookId);
     });
 
     function initializeAll() {
@@ -118,6 +118,7 @@ $(document).ready(function() {
               success: function(response) {
                   if (response.html) {
                       $(listId).html(response.html);
+                      reinitializeEventListeners();
                   }
               },
               error: function(xhr) {
@@ -225,24 +226,52 @@ $(document).ready(function() {
         let bookRow = $('#book-' + bookId);
         let originalTitle = bookRow.data('original-title');
         let originalDescription = bookRow.data('original-description');
+        let originalKeywords = bookRow.data('original-keywords');
         bookRow.find('.book-title').text(originalTitle);
         bookRow.find('.book-description').text(originalDescription);
+        let keywordsContainer = bookRow.find('.book-keywords');
+        keywordsContainer.empty();
+
+        if (originalKeywords && originalKeywords.length > 0) {
+            originalKeywords.forEach(function(keyword) {
+                let keywordBadge = $('<span>').addClass('badge badge-secondary').css('color', '#000').text(keyword);
+                keywordsContainer.append(keywordBadge);
+            });
+        } else {
+            keywordsContainer.append('<span>No Keywords</span>');
+        }
     }
 
     function fetchTranslatedBookData(bookId, languageId) {
         $.ajax({
-           url: '/books/' + bookId + '/translate/' + languageId,
-           method: 'GET',
-           success: function(response) {
-               let bookRow = $('#book-' + bookId);
-               bookRow.find('.book-title').text(response.translated_title);
-               bookRow.find('.book-description').text(response.translated_description);
-           },
-           error: function(xhr) {
-               console.error('ERROR SUGGESTION:', xhr);
-           }
+            url: '/books/' + bookId + '/translate/' + languageId,
+            method: 'GET',
+            success: function(response) {
+                let bookRow = $('#book-' + bookId);
+
+                if (response.translated_title && response.translated_description) {
+                    bookRow.find('.book-title').text(response.translated_title);
+                    bookRow.find('.book-description').text(response.translated_description);
+                }
+
+                let keywordsContainer = bookRow.find('.book-keywords');
+                keywordsContainer.empty();
+
+                if (response.translated_keywords && response.translated_keywords.length > 0) {
+                    response.translated_keywords.forEach(function(keyword) {
+                        keywordsContainer.append('<span class="badge badge-secondary" style="color: #000;">' + keyword + '</span> ');
+                    });
+                } else {
+                    keywordsContainer.append('<span>No Keywords</span>');
+                }
+            },
+            error: function(xhr) {
+                console.error('ERROR SUGGESTION:', xhr);
+                showToast('An error occurred while fetching the translation.', 'error');
+            }
         });
     }
+
 
     function handleUpdate(buttonClass) {
         $(document).off('click', buttonClass);

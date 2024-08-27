@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 use App\Models\Book;
 use App\Models\Author;
 use App\Models\Genre;
+use App\Models\Keyword;
 use App\Models\Language;
 use App\Models\Publisher;
 use App\Models\Translation;
@@ -19,7 +20,7 @@ class BookController extends Controller
     use GetCachedData;
 
     public function index() {
-        $books = Book::with(['author', 'genre', 'publisher'])->get();
+        $books = Book::with(['author', 'genre', 'publisher', 'keywords'])->get();
         $cachedData = $this->getCachedData();
         return view('books.create-book', array_merge(['books' => $books], $cachedData));
     }
@@ -40,7 +41,9 @@ class BookController extends Controller
             ->with(['author', 'genre', 'publisher', 'keywords'])
             ->paginate(10);
 
-        $html = view('partials.booksList', compact('books'))->render();
+        $cachedData = $this->getCachedData();
+
+        $html = view('partials.booksList', array_merge(['books' => $books], $cachedData))->render();
 
         if ($books->isEmpty()) {
             return response()->json(['success' => false, 'html' => $html, 'errors' => 'No results found.']);
@@ -76,6 +79,7 @@ class BookController extends Controller
                 'author_id' => 'required|exists:authors,id',
                 'genre_id' => 'required|exists:genres,id',
                 'publisher_id' => 'required|exists:publishers,id',
+                'default_language_id' => 'required|exists:languages,id',
                 'cover_image' => 'nullable|image|max:2048',
             ]);
 
@@ -85,7 +89,7 @@ class BookController extends Controller
 
             Book::create($validatedData);
 
-            $books = Book::with(['author', 'genre', 'publisher'])->get();
+            $books = Book::with(['author', 'genre', 'publisher', 'keywords'])->get();
             $cachedData = $this->getCachedData();
             $html = view('partials.booksList', array_merge(['books' => $books], $cachedData))->render();
 
@@ -127,7 +131,7 @@ class BookController extends Controller
 
             $book->save();
 
-            $books = Book::with(['author', 'genre', 'publisher'])->get();
+            $books = Book::with(['author', 'genre', 'publisher', 'keywords'])->get();
             $cachedData = $this->getCachedData();
             $html = view('partials.booksList', array_merge(['books' => $books], $cachedData))->render();
 
@@ -150,7 +154,7 @@ class BookController extends Controller
             $book = Book::findOrFail($request->id);
             $book->delete();
 
-            $books = Book::with(['author', 'genre', 'publisher'])->get();
+            $books = Book::with(['author', 'genre', 'publisher', 'keywords'])->get();
             $cachedData = $this->getCachedData();
             $html = view('partials.booksList', array_merge(['books' => $books], $cachedData))->render();
 
@@ -166,13 +170,25 @@ class BookController extends Controller
             ->where('language_id', $languageId)
             ->first();
 
-        if (!$translation) {
-            return response()->json(['success' => false, 'errors' => 'Translation not found.'], 404);
-        }
+        $translatedKeywords = $book->keywords()
+            ->where('language_id', $languageId)
+            ->pluck('keyword')
+            ->toArray();
 
-        return response()->json(['success' => true, 'translated_title' => $translation->translated_title,
-            'translated_description' => $translation->translated_description,
+        if ($translation) {
+            return response()->json([
+                'success' => true,
+                'translated_title' => $translation->translated_title,
+                'translated_description' => $translation->translated_description,
+                'translated_keywords' => $translatedKeywords
             ]);
+        } else {
+            return response()->json([
+                'translated_title' => null,
+                'translated_description' => null,
+                'translated_keywords' => $translatedKeywords
+            ]);
+        }
     }
 
     private function searchBookQuery($searchTerm) {

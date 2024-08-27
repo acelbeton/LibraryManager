@@ -12,6 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('translations', function (Blueprint $table) {
+            $table->charset = 'utf8mb4';
+            $table->collation = 'utf8mb4_unicode_ci';
             $table->id();
             $table->foreignId('book_id')->constrained('books');
             $table->foreignId('language_id')->constrained('languages');
@@ -22,6 +24,8 @@ return new class extends Migration
             $table->index('book_id');
             $table->index('language_id');
             $table->index(['book_id', 'language_id']);
+
+            $table->unique(['book_id', 'language_id']);
         });
     }
 

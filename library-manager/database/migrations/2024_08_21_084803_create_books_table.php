@@ -18,12 +18,14 @@ return new class extends Migration
             $table->foreignId('author_id')->constrained('authors');
             $table->foreignId('genre_id')->constrained('genres');
             $table->foreignId('publisher_id')->constrained('publishers');
+            $table->foreignId('default_language_id')->constrained('languages');
             $table->string('cover_image')->nullable();
             $table->timestamps();
 
             $table->index('author_id');
             $table->index('genre_id');
             $table->index('publisher_id');
+            $table->index('default_language_id');
             $table->index('title');
         });
     }

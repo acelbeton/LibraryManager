@@ -6,11 +6,6 @@
                 <input type="text" name="search_term" id="search_term" placeholder="Search Books" class="form-control w-100" autocomplete="off">
                 <div id="suggestions" class="suggestions-list mt-1"></div>
             </div>
-            <select name="language_id" id="language_id" class="form-control" style="width: 15%" required>
-                @foreach($languages as $language)
-                    <option value="{{ $language->id }}">{{ $language->language_name }}</option>
-                @endforeach
-            </select>
         </div>
         <div id="search-button" class="d-flex justify-content-center mt-3">
             <button type="submit" class="btn btn-primary">Search</button>

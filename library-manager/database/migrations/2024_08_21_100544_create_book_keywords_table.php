@@ -12,6 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('book_keywords', function (Blueprint $table) {
+            $table->charset = 'utf8mb4';
+            $table->collation = 'utf8mb4_unicode_ci';
             $table->foreignId('book_id')->constrained('books')->onDelete('cascade');
             $table->foreignId('keyword_id')->constrained('keywords')->onDelete('cascade');
             $table->timestamps();

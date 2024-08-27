@@ -10,7 +10,7 @@ class Book extends Model
     use HasFactory;
 
     protected $table = 'books';
-    protected $fillable = ['title','description','author_id', 'genre_id', 'publisher_id', 'cover_image'];
+    protected $fillable = ['title','description','author_id', 'genre_id', 'publisher_id', 'default_language_id' , 'cover_image'];
 
     public $timestamps = true;
 
@@ -25,5 +25,8 @@ class Book extends Model
     }
     public function keywords() {
         return $this->belongsToMany(Keyword::class, 'book_keywords', 'book_id', 'keyword_id');
+    }
+    public function defaultLanguage() {
+        return $this->belongsTo(Language::class, 'default_language_id');
     }
 }
