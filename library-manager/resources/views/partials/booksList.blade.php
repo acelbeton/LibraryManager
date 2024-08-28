@@ -27,6 +27,8 @@
                 <th>Publisher</th>
                 <th>Keywords</th>
                 <th>Cover Image</th>
+                <th>Created At</th>
+                <th>Updated At</th>
                 <th>Actions</th>
             </tr>
             </thead>
@@ -39,7 +41,6 @@
 
                     <td>
                         <select class="form-control select-language" data-book-id="{{ $book->id }}">
-                            <option value="default">Default</option>
                             @if(isset($languages))
                                 @foreach($languages as $language)
                                     <option value="{{ $language->id }}">{{ $language->language_name }}</option>
@@ -49,12 +50,17 @@
                     </td>
                     <td class="book-title">{{ $book->title }}</td>
                     <td class="book-description">{{ $book->description }}</td>
-                    <td>{{ $book->author->name }}</td>
+                    <td class="book-author">{{ $book->author->name }}</td>
                     <td class="book-genre">{{ $book->genre->name }}</td>
-                    <td>{{ $book->publisher->name }}</td>
+                    <td class="book-genre">{{ $book->publisher->name }}</td>
                     <td class="book-keywords">
-                        @if($book->keywords->isNotEmpty())
-                            @foreach($book->keywords as $keyword)
+                        @php
+                            $languageId = $selectedLanguageId ?? $book->default_language_id;
+                            $keywords = $book->keywords->where('language_id', $languageId);
+                        @endphp
+
+                        @if($keywords->isNotEmpty())
+                            @foreach($keywords as $keyword)
                                 <span class="badge badge-secondary" style="color: #000;">{{ $keyword->keyword }}</span>
                             @endforeach
                         @else
@@ -66,6 +72,12 @@
                             <img src="{{ asset('storage/' . $book->cover_image) }}" alt="Cover Image" width="100" height="160">
                         @endif
                     </td>
+                    <td class="book-created-at">
+                        {{ $book->created_at }}
+                    </td>
+                    <td class="book-updated-at">
+                        {{ $book->updated_at }}
+                    </td>
                     <td>
                         <button class="btn btn-warning update-book"
                                 data-id="{{ $book->id }}"
@@ -74,7 +86,8 @@
                                 data-author_id="{{ $book->author_id }}"
                                 data-genre_id="{{ $book->genre_id }}"
                                 data-publisher_id="{{ $book->publisher_id }}"
-                                data-keywords="{{ json_encode($book->keywords->pluck('keyword')->toArray()) }}">
+                                data-keywords="{{ json_encode($book->keywords->where('language_id',
+                                                $book->default_language_id)->pluck('keyword')->toArray()) }}">
                             Update
                         </button>
                         <button class="btn btn-primary add-translation"

@@ -19,10 +19,24 @@ class BookController extends Controller
 {
     use GetCachedData;
 
-    public function index() {
-        $books = Book::with(['author', 'genre', 'publisher', 'keywords'])->get();
+    public function index(Request $request) {
+        $selectedLanguageId = $request->input('language_id');
+
+        $books = Book::with(['author', 'genre', 'publisher', 'keywords' => function($query) use ($selectedLanguageId) {
+            if ($selectedLanguageId) {
+                $query->where('language_id', $selectedLanguageId);
+            }
+        }])->get();
+
+        if (!$selectedLanguageId) {
+            foreach ($books as $book) {
+                $book->keywords = $book->keywords->where('language_id', $book->default_language_id);
+            }
+        }
+
         $cachedData = $this->getCachedData();
-        return view('books.create-book', array_merge(['books' => $books], $cachedData));
+
+        return view('books.create-book', array_merge(['books' => $books, 'selectedLanguageId' => $selectedLanguageId], $cachedData));
     }
 
     public function search(Request $request) {
@@ -114,7 +128,6 @@ class BookController extends Controller
     }
 
     public function update(Request $request) {
-
         try {
             $validator = Validator::make($request->all(), [
                 'id' => 'required|exists:books,id',
@@ -124,19 +137,36 @@ class BookController extends Controller
                 'genre_id' => 'required|exists:genres,id',
                 'publisher_id' => 'required|exists:publishers,id',
                 'cover_image' => 'nullable|image|max:2048',
+                'keywords' => 'nullable|array',
+                'keywords.*' => 'nullable|string|max:255',
             ]);
 
             if ($validator->fails()) {
                 return response()->json(['success' => false, 'error' => 'Validation failed. Please check your input.'], 422);
             }
 
-            $book = Book::findOrFail($request->id);
+            $validatedData = $validator->validated();
 
-            $book->title = $request->title;
-            $book->description = $request->description;
-            $book->author_id = $request->author_id;
-            $book->genre_id = $request->genre_id;
-            $book->publisher_id = $request->publisher_id;
+            $book = Book::findOrFail($validatedData['id']);
+
+            $book->title = $validatedData['title'];
+            $book->description = $validatedData['description'];
+            $book->author_id = $validatedData['author_id'];
+            $book->genre_id = $validatedData['genre_id'];
+            $book->publisher_id = $validatedData['publisher_id'];
+
+            if (!empty($validatedData['keywords'])) {
+                $book->keywords()->detach();
+
+                foreach ($validatedData['keywords'] as $keyword) {
+                    $keywordRecord = Keyword::firstOrCreate([
+                        'keyword' => $keyword,
+                        'language_id' => $book->default_language_id
+                    ]);
+
+                    $book->keywords()->attach($keywordRecord->id);
+                }
+            }
 
             if ($request->hasFile('cover_image')) {
                 $book->cover_image = $request->file('cover_image')->store('cover_images', 'public');
@@ -154,6 +184,7 @@ class BookController extends Controller
             return response()->json(['success' => false, 'error' => 'An unexpected error occurred. Please try again later.'], 500);
         }
     }
+
 
     public function destroy(Request $request){
 
