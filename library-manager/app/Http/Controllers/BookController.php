@@ -81,13 +81,26 @@ class BookController extends Controller
                 'publisher_id' => 'required|exists:publishers,id',
                 'default_language_id' => 'required|exists:languages,id',
                 'cover_image' => 'nullable|image|max:2048',
+                'keywords' => 'nullable|array',
+                'keywords.*' => 'nullable|string|max:255',
             ]);
 
             if ($request->hasFile('cover_image')) {
                 $validatedData['cover_image'] = $request->file('cover_image')->store('cover_images', 'public');
             }
 
-            Book::create($validatedData);
+            $book = Book::create($validatedData);
+
+            if(!empty($validatedData['keywords'])) {
+                foreach ($validatedData['keywords'] as $keyword) {
+                    $keywordRecord = Keyword::firstOrCreate([
+                        'keyword' => $keyword,
+                        'language_id' => $validatedData['default_language_id']
+                    ]);
+
+                    $book->keywords()->attach($keywordRecord->id);
+                }
+            }
 
             $books = Book::with(['author', 'genre', 'publisher', 'keywords'])->get();
             $cachedData = $this->getCachedData();

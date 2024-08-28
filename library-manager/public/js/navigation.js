@@ -1,8 +1,4 @@
 $(document).ready(function() {
-    $('.add-translation').on('click', function() {
-        let bookId = $(this).data('book_id');
-        $('#translation-book-id').val(bookId);
-    });
 
     function initializeAll() {
         reinitializeEventListeners();
@@ -28,6 +24,11 @@ $(document).ready(function() {
                 fetchTranslatedBookData(bookId, languageId);
             }
         });
+
+        $('.add-translation').on('click', function() {
+            let bookId = $(this).data('book_id');
+            $('#translation-book-id').val(bookId);
+        });
     }
 
     function handleFormSubmission(formId, modalId, listId) {
@@ -37,6 +38,23 @@ $(document).ready(function() {
             event.preventDefault();
 
             const $form = $(this);
+
+            $form.find('input[name="keywords[]"]').remove();
+
+            const keywordsInput = $form.find('input[name="keywords"]');
+            if (keywordsInput.length > 0) {
+                const keywordsString = keywordsInput.val();
+                const keywordsArray = keywordsString.split(',').map(function(keyword) {
+                    return keyword.trim();
+                });
+
+                keywordsArray.forEach(function(keyword) {
+                    if (keyword) {
+                        $form.append(`<input type="hidden" name="keywords[]" value="${keyword}">`);
+                    }
+                });
+            }
+
             const formData = new FormData($form[0]);
             const isTranslationForm = $form.hasClass('translation-form');
 
@@ -48,7 +66,6 @@ $(document).ready(function() {
                 contentType: false,
                 success: function(response) {
                     if (isTranslationForm && response.exists) {
-
                         $(modalId).modal('hide');
 
                         showBootstrapConfirmation(response.message, function() {
@@ -97,8 +114,6 @@ $(document).ready(function() {
             });
         });
     }
-
-
 
     function handleSearchSubmission(formId, listId) {
         $(formId).off('submit');
@@ -284,6 +299,7 @@ $(document).ready(function() {
             let authorId = $button.data('author_id');
             let genreId = $button.data('genre_id');
             let publisherId = $button.data('publisher_id');
+            let keywords = $button.data('keywords');
 
             $('#update-book-id').val(bookId);
             $('#update-title').val(title);
@@ -291,6 +307,12 @@ $(document).ready(function() {
             $('#update-author_id').val(authorId);
             $('#update-genre_id').val(genreId);
             $('#update-publisher_id').val(publisherId);
+
+            if (keywords && Array.isArray(keywords)) {
+                $('#update-keywords').val(keywords.join(', '));
+            } else {
+                $('#update-keywords').val('');
+            }
 
             $('#updateBookModal').modal('show');
         });

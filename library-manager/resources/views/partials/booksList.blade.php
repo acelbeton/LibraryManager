@@ -73,7 +73,8 @@
                                 data-description="{{ $book->description }}"
                                 data-author_id="{{ $book->author_id }}"
                                 data-genre_id="{{ $book->genre_id }}"
-                                data-publisher_id="{{ $book->publisher_id }}">
+                                data-publisher_id="{{ $book->publisher_id }}"
+                                data-keywords="{{ json_encode($book->keywords->pluck('keyword')->toArray()) }}">
                             Update
                         </button>
                         <button class="btn btn-primary add-translation"
@@ -139,6 +140,10 @@
                         @endif
                     </div>
                     <div class="mb-3">
+                        <label for="update-keywords" class="form-label">Keywords</label>
+                        <input type="text" name="keywords" id="update-keywords" class="form-control" placeholder="Enter keywords separated by commas">
+                    </div>
+                    <div class="mb-3">
                         <label for="update-cover_image" class="form-label">Cover Image</label>
                         <input type="file" name="cover_image" id="update-cover_image" class="form-control">
                     </div>
@@ -169,6 +174,10 @@
                     <div class="mb-3">
                         <label for="translated_description" class="form-label">Description:</label>
                         <textarea name="translated_description" id="translate-description" class="form-control"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="keywords" class="form-label">Keywords</label>
+                        <input type="text" name="keywords" id="keywords" class="form-control" placeholder="Enter keywords separated by commas">
                     </div>
                     <div class="mb-3">
                         <select name="language_id" id="language_id" class="form-select" required>

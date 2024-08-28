@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Book;
+use App\Models\Keyword;
 use App\Models\Translation;
 use App\Traits\GetCachedData;
 use Illuminate\Http\Request;
@@ -18,6 +19,8 @@ class TranslationController extends Controller
             'book_id' => 'required',
             'translated_title' => 'required|string|max:255',
             'translated_description' => 'min:3|max:1000',
+            'keywords' => 'nullable|array',
+            'keywords.*' => 'nullable|string|max:255',
             'language_id' => 'required|exists:languages,id',
         ]);
 
@@ -30,6 +33,8 @@ class TranslationController extends Controller
         $translation = Translation::where('book_id', $validatedData['book_id'])
             ->where('language_id', $validatedData['language_id'])
             ->first();
+
+        $book = Book::find($validatedData['book_id']);
 
         if ($translation) {
             if ($request->has('update_existing')) {
@@ -48,6 +53,17 @@ class TranslationController extends Controller
         } else {
             Translation::create($validatedData);
             $message = 'Translation added successfully.';
+        }
+
+        if(!empty($validatedData['keywords'])) {
+            foreach ($validatedData['keywords'] as $keyword) {
+                $keywordRecord = Keyword::firstOrCreate([
+                    'keyword' => $keyword,
+                    'language_id' => $validatedData['language_id']
+                ]);
+
+                $book->keywords()->attach($keywordRecord->id);
+            }
         }
 
         $books = Book::with(['author', 'genre', 'publisher'])->get();

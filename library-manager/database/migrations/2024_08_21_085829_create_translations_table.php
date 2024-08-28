@@ -15,7 +15,7 @@ return new class extends Migration
             $table->charset = 'utf8mb4';
             $table->collation = 'utf8mb4_unicode_ci';
             $table->id();
-            $table->foreignId('book_id')->constrained('books');
+            $table->foreignId('book_id')->constrained('books')->onDelete('cascade');
             $table->foreignId('language_id')->constrained('languages');
             $table->string('translated_title');
             $table->text('translated_description')->nullable();

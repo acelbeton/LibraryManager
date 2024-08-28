@@ -20,6 +20,7 @@
                 <form id="create-book-form" action="{{ route('books.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     <div class="modal-body">
+
                         <div class="mb-3">
                             <label for="title" class="form-label">Title</label>
                             <input type="text" name="title" id="title" class="form-control" required>
@@ -56,7 +57,14 @@
                                 @endforeach
                             </select>
                         </div>
+
+                        <div class="mb-3">
+                            <label for="keywords" class="form-label">Keywords</label>
+                            <input type="text" name="keywords" id="keywords" class="form-control" placeholder="Enter keywords separated by commas">
+                        </div>
+
                         <input type="hidden" name="default_language_id" value="1">
+
                         <div class="mb-3">
                             <label for="cover_image" class="form-label">Cover Image</label>
                             <input type="file" name="cover_image" id="cover_image" class="form-control">
@@ -70,6 +78,7 @@
             </div>
         </div>
     </div>
+
 
     <div id="booksList">
         @include('partials.booksList')
