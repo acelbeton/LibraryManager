@@ -19,5 +19,13 @@ class Genre extends Model
     public function genreTranslations() {
         return $this->hasMany(GenreTranslation::class);
     }
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function($genre) {
+            $genre->genreTranslations()->delete();
+        });
+    }
 
 }

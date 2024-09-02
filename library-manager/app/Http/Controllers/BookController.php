@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 use App\Models\Book;
 use App\Models\Author;
 use App\Models\Genre;
+use App\Models\GenreTranslation;
 use App\Models\Keyword;
 use App\Models\Language;
 use App\Models\Publisher;
@@ -77,9 +78,14 @@ class BookController extends Controller
 
         $searchTerm = $request->input('search_term');
 
-        $books = $this->searchBookQuery($searchTerm)->limit(5)->get();
+        $results = $this->searchBookQuery($searchTerm)
+            ->limit(5)
+            ->get()
+            ->filter(function ($result) {
+                return isset($result->title) || isset($result->name);
+            });
 
-        $html = view('partials.suggestionsList', compact('books'))->render();
+        $html = view('partials.suggestionsList', compact('results'))->render();
 
         return response()->json(['html' => $html]);
     }
@@ -196,6 +202,11 @@ class BookController extends Controller
             }
 
             $book = Book::findOrFail($request->id);
+
+            if ($book->cover_image) {
+                \Storage::disk('public')->delete($book->cover_image);
+            }
+
             $book->delete();
 
             $books = Book::with(['author', 'genre', 'publisher', 'keywords'])->get();
@@ -219,18 +230,25 @@ class BookController extends Controller
             ->pluck('keyword')
             ->toArray();
 
+        $translatedGenreName = GenreTranslation::where('genre_id', $book->genre_id)
+            ->where('language_id', $languageId)
+            ->value('translated_name');
+
+
         if ($translation) {
             return response()->json([
                 'success' => true,
                 'translated_title' => $translation->translated_title,
                 'translated_description' => $translation->translated_description,
-                'translated_keywords' => $translatedKeywords
+                'translated_keywords' => $translatedKeywords,
+                'translated_genre_name' => $translatedGenreName
             ]);
         } else {
             return response()->json([
                 'translated_title' => null,
                 'translated_description' => null,
-                'translated_keywords' => $translatedKeywords
+                'translated_keywords' => $translatedKeywords,
+                'translated_genre_name' => $translatedGenreName
             ]);
         }
     }

@@ -4,6 +4,7 @@ namespace App\Traits;
 
 use App\Models\Author;
 use App\Models\Genre;
+use App\Models\GenreTranslation;
 use App\Models\Keyword;
 use App\Models\Language;
 use App\Models\Publisher;
@@ -38,6 +39,10 @@ trait GetCachedData
             return Translation::all();
         });
 
-        return compact('authors', 'genres', 'publishers', 'languages', 'translations');
+        $genreTranslations = Cache::remember('genreTranslations', 60 * 60, function () {
+            return GenreTranslation::all();
+        });
+
+        return compact('authors', 'genres', 'publishers', 'languages', 'translations', 'genreTranslations', 'keywords');
     }
 }

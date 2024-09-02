@@ -37,6 +37,7 @@
                 <tr id="book-{{ $book->id }}"
                     data-original-title="{{ $book->title }}"
                     data-original-description="{{ $book->description }}"
+                    data-original-genre="{{ $book->genre->name }}"
                     data-original-keywords="{{ json_encode($book->keywords->pluck('keyword')->toArray()) }}">
 
                     <td>
@@ -52,7 +53,7 @@
                     <td class="book-description">{{ $book->description }}</td>
                     <td class="book-author">{{ $book->author->name }}</td>
                     <td class="book-genre">{{ $book->genre->name }}</td>
-                    <td class="book-genre">{{ $book->publisher->name }}</td>
+                    <td class="book-publisher">{{ $book->publisher->name }}</td>
                     <td class="book-keywords">
                         @php
                             $languageId = $selectedLanguageId ?? $book->default_language_id;
@@ -93,7 +94,8 @@
                         <button class="btn btn-primary add-translation"
                                 data-bs-toggle="modal"
                                 data-bs-target="#addTranslationModal"
-                                data-book_id="{{ $book->id }}">
+                                data-book_id="{{ $book->id }}"
+                                >
                             Add Translation
                         </button>
                         <button class="btn btn-danger delete-book" data-id="{{ $book->id }}">Delete</button>
@@ -104,73 +106,69 @@
         </table>
     </div>
 
-    <div class="modal fade" id="updateBookModal" tabindex="-1" aria-labelledby="updateBookModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="updateBookModalLabel">Update Book</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <form id="update-book-form" action="{{ route('books.update') }}" method="POST" enctype="multipart/form-data">
-                    @csrf
-                    <input type="hidden" name="id" id="update-book-id">
-                    <div class="mb-3">
-                        <label for="update-title" class="form-label">Title:</label>
-                        <input type="text" name="title" id="update-title" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="update-description" class="form-label">Description:</label>
-                        <textarea name="description" id="update-description" class="form-control"></textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label for="update-author_id" class="form-label">Author:</label>
-                        @if(isset($authors))
-                            <select name="author_id" id="author_id" class="form-select" required>
-                                @foreach($authors as $author)
-                                    <option value="{{ $author->id }}">{{ $author->name }}</option>
-                                @endforeach
-                            </select>
-                        @endif
-                    </div>
-                    <div class="mb-3">
-                        <label for="update-genre_id" class="form-label">Genre:</label>
-                        @if(isset($genres))
-                            <select name="genre_id" id="genre_id" class="form-select" required>
-                                @foreach($genres as $genre)
-                                    <option value="{{ $genre->id }}">{{ $genre->name }}</option>
-                                @endforeach
-                            </select>
-                        @endif
-                    </div>
-                    <div class="mb-3">
-                        <label for="update-publisher_id" class="form-label">Publisher:</label>
-                        @if(isset($publishers))
-                            <select name="publisher_id" id="publisher_id" class="form-select" required>
-                                @foreach($publishers as $publisher)
-                                    <option value="{{ $publisher->id }}">{{ $publisher->name }}</option>
-                                @endforeach
-                            </select>
-                        @endif
-                    </div>
-                    <div class="mb-3">
-                        <label for="update-keywords" class="form-label">Keywords</label>
-                        <input type="text" name="keywords" id="update-keywords" class="form-control" placeholder="Enter keywords separated by commas">
-                    </div>
-                    <div class="mb-3">
-                        <label for="update-cover_image" class="form-label">Cover Image</label>
-                        <input type="file" name="cover_image" id="update-cover_image" class="form-control">
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-primary">Update Book</button>
-                    </div>
-                </form>
+<div class="modal fade" id="updateBookModal" tabindex="-1" aria-labelledby="updateBookModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="updateBookModalLabel">Update Book</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
+            <form id="update-book-form" action="{{ route('books.update') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <input type="hidden" name="id" id="update-book-id">
+
+                <div class="mb-3">
+                    <label for="update-title" class="form-label">Title:</label>
+                    <input type="text" name="title" id="update-title" class="form-control" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="update-description" class="form-label">Description:</label>
+                    <textarea name="description" id="update-description" class="form-control"></textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label for="update-author-search" class="form-label">Author:</label>
+                    <input type="text" id="update-author-search" class="form-control" placeholder="Search author" required>
+                    <input type="hidden" name="author_id" id="update-author_id">
+                    <div id="update-author-suggestions" class="suggestions-list"></div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="update-genre-search" class="form-label">Genre:</label>
+                    <input type="text" id="update-genre-search" class="form-control" placeholder="Search genre" required>
+                    <input type="hidden" name="genre_id" id="update-genre_id">
+                    <div id="update-genre-suggestions" class="suggestions-list"></div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="update-publisher-search" class="form-label">Publisher:</label>
+                    <input type="text" id="update-publisher-search" class="form-control" placeholder="Search publisher" required>
+                    <input type="hidden" name="publisher_id" id="update-publisher_id">
+                    <div id="update-publisher-suggestions" class="suggestions-list"></div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="update-keywords" class="form-label">Keywords</label>
+                    <input type="text" name="keywords" id="update-keywords" class="form-control" placeholder="Enter keywords separated by commas">
+                </div>
+
+                <div class="mb-3">
+                    <label for="update-cover_image" class="form-label">Cover Image</label>
+                    <input type="file" name="cover_image" id="update-cover_image" class="form-control">
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Update Book</button>
+                </div>
+            </form>
         </div>
     </div>
+</div>
 
 
-    <div class="modal fade" id="addTranslationModal" tabindex="-1" aria-labelledby="addTranslationModalLabel" aria-hidden="true">
+<div class="modal fade" id="addTranslationModal" tabindex="-1" aria-labelledby="addTranslationModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">

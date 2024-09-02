@@ -16,6 +16,7 @@ return new class extends Migration
             $table->collation = 'utf8mb4_unicode_ci';
             $table->id();
             $table->string('name')->unique();
+            $table->text('bio')->nullable();
             $table->timestamps();
         });
     }

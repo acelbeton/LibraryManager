@@ -10,6 +10,15 @@
             <li class="nav-item">
                 <a href="{{ route('books.index') }}" class="ajax-link nav-link">Books</a>
             </li>
+            <li class="nav-item">
+                <a href="{{ route('genres.index') }}" class="ajax-link nav-link">Genres</a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ route('authors.index') }}" class="ajax-link nav-link">Authors</a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ route('publishers.index') }}" class="ajax-link nav-link">Publishers</a>
+            </li>
         </ul>
     </div>
 </nav>

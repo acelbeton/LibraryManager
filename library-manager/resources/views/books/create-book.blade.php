@@ -4,7 +4,7 @@
 
     <div class="container mt-5">
         <h2>Books</h2>
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createBookModal">Create New Book</button>
+        <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#createBookModal">Create New Book</button>
     </div>
     <div id="searchbar">
         @include('partials.searchbar')
@@ -32,30 +32,24 @@
                         </div>
 
                         <div class="mb-3">
-                            <label for="author_id" class="form-label">Author</label>
-                            <select name="author_id" id="author_id" class="form-select" required>
-                                @foreach($authors as $author)
-                                    <option value="{{ $author->id }}">{{ $author->name }}</option>
-                                @endforeach
-                            </select>
+                            <label for="author-search" class="form-label">Author</label>
+                            <input type="text" id="author-search" class="form-control" placeholder="Search author" required>
+                            <input type="hidden" name="author_id" id="author_id">
+                            <div id="author-suggestions" class="suggestions-list"></div>
                         </div>
 
                         <div class="mb-3">
-                            <label for="genre_id" class="form-label">Genre</label>
-                            <select name="genre_id" id="genre_id" class="form-select" required>
-                                @foreach($genres as $genre)
-                                    <option value="{{ $genre->id }}">{{ $genre->name }}</option>
-                                @endforeach
-                            </select>
+                            <label for="genre-search" class="form-label">Genre</label>
+                            <input type="text" id="genre-search" class="form-control" placeholder="Search genre" required>
+                            <input type="hidden" name="genre_id" id="genre_id">
+                            <div id="genre-suggestions" class="suggestions-list"></div>
                         </div>
 
                         <div class="mb-3">
-                            <label for="publisher_id" class="form-label">Publisher</label>
-                            <select name="publisher_id" id="publisher_id" class="form-select" required>
-                                @foreach($publishers as $publisher)
-                                    <option value="{{ $publisher->id }}">{{ $publisher->name }}</option>
-                                @endforeach
-                            </select>
+                            <label for="publisher-search" class="form-label">Publisher</label>
+                            <input type="text" id="publisher-search" class="form-control" placeholder="Search publisher" required>
+                            <input type="hidden" name="publisher_id" id="publisher_id">
+                            <div id="publisher-suggestions" class="suggestions-list"></div>
                         </div>
 
                         <div class="mb-3">

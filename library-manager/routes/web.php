@@ -1,6 +1,10 @@
 <?php
 
+use App\Http\Controllers\AuthorController;
 use App\Http\Controllers\BookController;
+use App\Http\Controllers\GenreController;
+use App\Http\Controllers\GenreTranslationController;
+use App\Http\Controllers\PublisherController;
 use App\Http\Controllers\TranslationController;
 use Illuminate\Support\Facades\Route;
 
@@ -28,7 +32,37 @@ Route::post('/books/search', [BookController::class, 'search'])->name('books.sea
 
 Route::post('books/translate/add', [TranslationController::class, 'store'])->name('books.translate.add');
 
-Route::get('books/{book}/translate/{language}', [BookController::class, 'getTranslation']);
+Route::get('/books/{book}/translate/{language}', [BookController::class, 'getTranslation']);
+
+Route::get('/books/{book}/translation/{language}', [BookController::class, 'getTranslation']);
+
+Route::get('/author/suggestions', [AuthorController::class, 'suggestions']);
+Route::get('/genre/suggestions', [GenreController::class, 'suggestions']);
+Route::get('/publisher/suggestions', [PublisherController::class, 'suggestions']);
+
+Route::get('genres', [GenreController::class, 'index'])->name('genres.index');
+Route::post('genres', [GenreController::class, 'store'])->name('genres.store');
+
+Route::post('genres/translations', [GenreTranslationController::class, 'store'])->name('genres.translations.store');
+
+Route::post('genres/update', [GenreController::class, 'update'])->name('genres.update');
+
+Route::get('/genres/{genreId}/translations/{languageId}', [GenreController::class, 'getTranslation']);
+
+Route::post('/genres/destroy', [GenreController::class, 'destroy'])->name('genres.destroy');
+
+Route::get('/authors', [AuthorController::class, 'index'])->name('authors.index');
+Route::post('authors', [AuthorController::class, 'store'])->name('authors.store');
+
+Route::post('authors/update', [AuthorController::class, 'update'])->name('authors.update');
+Route::post('/authors/destroy', [AuthorController::class, 'destroy'])->name('authors.destroy');
+
+Route::get('/publishers', [PublisherController::class, 'index'])->name('publishers.index');
+Route::post('publishers', [PublisherController::class, 'store'])->name('publishers.store');
+
+Route::post('publishers/update', [PublisherController::class, 'update'])->name('publishers.update');
+Route::post('/publishers/destroy', [PublisherController::class, 'destroy'])->name('publishers.destroy');
+
 
 Route::get('/', function () {
     return view('welcome');

@@ -13,8 +13,19 @@ class PublishersSeeder extends Seeder
      */
     public function run(): void
     {
-        Publisher::create(['name' => 'Penguin Random House']);
-        Publisher::create(['name' => 'HarperCollins']);
-        Publisher::create(['name' => 'Simon & Schuster']);
+        Publisher::create([
+            'name' => 'Penguin Random House',
+            'address' => '1745 Broadway, New York, NY 10019, USA'
+        ]);
+
+        Publisher::create([
+            'name' => 'HarperCollins',
+            'address' => '195 Broadway, New York, NY 10007, USA'
+        ]);
+
+        Publisher::create([
+            'name' => 'Simon & Schuster',
+            'address' => '1230 Avenue of the Americas, New York, NY 10020, USA'
+        ]);
     }
 }
