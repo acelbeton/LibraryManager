@@ -19,6 +19,9 @@
             <li class="nav-item">
                 <a href="{{ route('publishers.index') }}" class="ajax-link nav-link">Publishers</a>
             </li>
+            <li class="nav-item">
+                <a href="{{ route('languages.index') }}" class="ajax-link nav-link">Languages</a>
+            </li>
         </ul>
     </div>
 </nav>

@@ -188,13 +188,15 @@
                     </div>
                     <div class="mb-3">
                         <label for="keywords" class="form-label">Keywords</label>
-                        <input type="text" name="keywords" id="keywords" class="form-control" placeholder="Enter keywords separated by commas">
+                        <input type="text" name="keywords" id="translate-keywords" class="form-control" placeholder="Enter keywords separated by commas">
                     </div>
                     <div class="mb-3">
                         <select name="language_id" id="language_id" class="form-select" required>
                             @if(isset($languages))
                                 @foreach($languages as $language)
-                                    <option value="{{ $language->id }}">{{ $language->language_name }}</option>
+                                    @if($language->language_name !== 'English')
+                                        <option value="{{ $language->id }}">{{ $language->language_name }}</option>
+                                    @endif
                                 @endforeach
                             @endif
                         </select>

@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthorController;
 use App\Http\Controllers\BookController;
 use App\Http\Controllers\GenreController;
 use App\Http\Controllers\GenreTranslationController;
+use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\PublisherController;
 use App\Http\Controllers\TranslationController;
 use Illuminate\Support\Facades\Route;
@@ -62,6 +63,12 @@ Route::post('publishers', [PublisherController::class, 'store'])->name('publishe
 
 Route::post('publishers/update', [PublisherController::class, 'update'])->name('publishers.update');
 Route::post('/publishers/destroy', [PublisherController::class, 'destroy'])->name('publishers.destroy');
+
+Route::get('/languages', [LanguageController::class, 'index'])->name('languages.index');
+Route::post('languages', [LanguageController::class, 'store'])->name('languages.store');
+
+Route::post('languages/update', [LanguageController::class, 'update'])->name('languages.update');
+Route::post('/languages/destroy', [LanguageController::class, 'destroy'])->name('languages.destroy');
 
 
 Route::get('/', function () {

@@ -14,6 +14,7 @@ use App\Models\Translation;
 use App\Traits\GetCachedData;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class BookController extends Controller
@@ -21,23 +22,28 @@ class BookController extends Controller
     use GetCachedData;
 
     public function index(Request $request) {
-        $selectedLanguageId = $request->input('language_id');
+        try {
+            $selectedLanguageId = $request->input('language_id');
 
-        $books = Book::with(['author', 'genre', 'publisher', 'keywords' => function($query) use ($selectedLanguageId) {
-            if ($selectedLanguageId) {
-                $query->where('language_id', $selectedLanguageId);
-            }
-        }])->get();
+            $books = Book::with(['author', 'genre', 'publisher', 'keywords' => function($query) use ($selectedLanguageId) {
+                if ($selectedLanguageId) {
+                    $query->where('language_id', $selectedLanguageId);
+                }
+            }])->get();
 
-        if (!$selectedLanguageId) {
-            foreach ($books as $book) {
-                $book->keywords = $book->keywords->where('language_id', $book->default_language_id);
+            if (!$selectedLanguageId) {
+                foreach ($books as $book) {
+                    $book->keywords = $book->keywords->where('language_id', $book->default_language_id);
+                }
             }
+
+            $cachedData = $this->getCachedData();
+
+            return view('books.create-book', array_merge(['books' => $books, 'selectedLanguageId' => $selectedLanguageId], $cachedData));
+        } catch (\Exception $e) {
+            Log::error('Error fetching books: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'An error occurred while retrieving books.');
         }
-
-        $cachedData = $this->getCachedData();
-
-        return view('books.create-book', array_merge(['books' => $books, 'selectedLanguageId' => $selectedLanguageId], $cachedData));
     }
 
     public function search(Request $request) {
@@ -128,7 +134,7 @@ class BookController extends Controller
 
             return response()->json(['success' => true,'message' => 'Book added successfully!', 'html' => $html], 201);
         } catch (\Exception $e) {
-            \Log::error($e->getMessage());
+            Log::error($e->getMessage());
             return response()->json(['success' => false, 'error' => 'An unexpected error occurred. Please try again later.'], 500);
         }
     }
@@ -186,7 +192,7 @@ class BookController extends Controller
 
             return response()->json(['success' => true, 'message' => 'Book updated successfully!', 'html' => $html]);
         } catch (\Exception $e) {
-            \Log::error($e->getMessage());
+            Log::error($e->getMessage());
             return response()->json(['success' => false, 'error' => 'An unexpected error occurred. Please try again later.'], 500);
         }
     }
@@ -215,57 +221,57 @@ class BookController extends Controller
 
             return response()->json(['success' => true,'message' => 'Book deleted successfully!', 'html' => $html]);
         } catch (\Exception $e) {
-            \Log::error($e->getMessage());
+            Log::error($e->getMessage());
             return response()->json(['success' => false, 'errors' => 'An unexpected error occurred. Please try again.'], 500);
         }
     }
 
     public function getTranslation(Book $book, $languageId) {
-        $translation = Translation::where('book_id', $book->id)
-            ->where('language_id', $languageId)
-            ->first();
+        try {
+            $translation = Translation::where('book_id', $book->id)
+                ->where('language_id', $languageId)
+                ->first();
 
-        $translatedKeywords = $book->keywords()
-            ->where('language_id', $languageId)
-            ->pluck('keyword')
-            ->toArray();
+            $translatedKeywords = $book->keywords()
+                ->where('language_id', $languageId)
+                ->pluck('keyword')
+                ->toArray();
 
-        $translatedGenreName = GenreTranslation::where('genre_id', $book->genre_id)
-            ->where('language_id', $languageId)
-            ->value('translated_name');
+            $translatedGenreName = GenreTranslation::where('genre_id', $book->genre_id)
+                ->where('language_id', $languageId)
+                ->value('translated_name');
 
-
-        if ($translation) {
             return response()->json([
                 'success' => true,
-                'translated_title' => $translation->translated_title,
-                'translated_description' => $translation->translated_description,
+                'translated_title' => $translation ? $translation->translated_title : null,
+                'translated_description' => $translation ? $translation->translated_description : null,
                 'translated_keywords' => $translatedKeywords,
-                'translated_genre_name' => $translatedGenreName
+                'translated_genre_name' => $translatedGenreName ?? $book->genre->name,
             ]);
-        } else {
-            return response()->json([
-                'translated_title' => null,
-                'translated_description' => null,
-                'translated_keywords' => $translatedKeywords,
-                'translated_genre_name' => $translatedGenreName
-            ]);
+        } catch (\Exception $e) {
+            Log::error('Error fetching translation for book: ' . $e->getMessage());
+            return response()->json(['success' => false, 'error' => 'An unexpected error occurred. Please try again later.'], 500);
         }
     }
 
     private function searchBookQuery($searchTerm) {
-        return Book::where('title', 'LIKE', '%' . $searchTerm . '%')
-            ->orWhereHas('author', function ($query) use ($searchTerm) {
-                $query->where('name', 'LIKE', '%' . $searchTerm . '%');
-            })
-            ->orWhereHas('genre', function ($query) use ($searchTerm) {
-                $query->where('name', 'LIKE', '%' . $searchTerm . '%');
-            })
-            ->orWhereHas('publisher', function ($query) use ($searchTerm) {
-                $query->where('name', 'LIKE', '%' . $searchTerm . '%');
-            })
-            ->orWhereHas('keywords', function ($query) use ($searchTerm) {
-                $query->where('keyword', 'LIKE', '%' . $searchTerm . '%');
-            });
+        try {
+            return Book::where('title', 'LIKE', '%' . $searchTerm . '%')
+                ->orWhereHas('author', function ($query) use ($searchTerm) {
+                    $query->where('name', 'LIKE', '%' . $searchTerm . '%');
+                })
+                ->orWhereHas('genre', function ($query) use ($searchTerm) {
+                    $query->where('name', 'LIKE', '%' . $searchTerm . '%');
+                })
+                ->orWhereHas('publisher', function ($query) use ($searchTerm) {
+                    $query->where('name', 'LIKE', '%' . $searchTerm . '%');
+                })
+                ->orWhereHas('keywords', function ($query) use ($searchTerm) {
+                    $query->where('keyword', 'LIKE', '%' . $searchTerm . '%');
+                });
+        } catch (\Exception $e) {
+            Log::error('Error searching for books: ' . $e->getMessage());
+            return null;
+        }
     }
 }

@@ -51,7 +51,7 @@ class AuthorController extends Controller
         $author->save();
         $authors = Author::all();
         $html = view('partials.authorsList', compact('authors'))->render();
-        return response()->json(['success' => true, 'html' => $html, 'message' => 'Genrecd updated successfully']);
+        return response()->json(['success' => true, 'html' => $html, 'message' => 'Author updated successfully']);
     }
 
     public function destroy(Request $request) {

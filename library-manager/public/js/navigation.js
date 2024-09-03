@@ -42,6 +42,11 @@ $(document).ready(function() {
         handleFormSubmission('#update-publisher-form', '#updatePublisherModal', '#publishersList');
         handleUpdate('.update-publisher', 'publisher');
 
+        handleFormSubmission('#create-language-form','#createLanguageModal', '#languagesList');
+        handleDeletion('.delete-language', '/languages/destroy', '#languagesList', 'Are you sure you want to delete this Language?');
+        handleFormSubmission('#update-language-form', '#updateLanguageModal', '#languagesList');
+        handleUpdate('.update-language', 'language');
+
         $('.select-language').on('change', function() {
             let bookId = $(this).data('book-id');
             let languageId = $(this).val();
@@ -74,7 +79,13 @@ $(document).ready(function() {
             fetchGenreTranslation(genreId, languageId);
         });
 
-        $('#language_id').on('change', function() {
+        $('#addTranslationModal #language_id').on('change', function() {
+            let bookId = $('#translation-book-id').val();
+            let languageId = $(this).val();
+            fetchBookTranslation(bookId, languageId);
+        });
+
+        $('#addGenreTranslationModal #language_id').on('change', function() {
             let genreId = $('#translation-genre-id').val();
             let languageId = $(this).val();
             fetchGenreTranslation(genreId, languageId);
@@ -93,7 +104,7 @@ $(document).ready(function() {
                 }
             },
             error: function(xhr) {
-                console.error('Error fetching translation:', xhr);
+                console.error('Error fetching translation');
                 $('#translated_name').val('');
             }
         });
@@ -104,18 +115,17 @@ $(document).ready(function() {
             url: `/books/${bookId}/translation/${languageId}`,
             method: 'GET',
             success: function(response) {
-                if (response.translated_title || response.translated_description) {
-                    $('#translate-title').val(response.translated_title);
-                    $('#translate-description').val(response.translated_description);
-                    $('#keywords').val(response.translated_keywords.join(', '));
+                $('#translate-title').val(response.translated_title || '');
+                $('#translate-description').val(response.translated_description || '');
+                if (response.translated_keywords && response.translated_keywords.length > 0) {
+                    const keywordsString = response.translated_keywords.join(', ');
+                    $('#translate-keywords').val(keywordsString);
                 } else {
-                    $('#translate-title').val('');
-                    $('#translate-description').val('');
-                    $('#keywords').val('');
+                    $('#translate-keywords').val('');
                 }
             },
             error: function(xhr) {
-                console.error('Error fetching translation:', xhr);
+                console.error('Error fetching translation');
                 $('#translate-title').val('');
                 $('#translate-description').val('');
                 $('#keywords').val('');
@@ -343,7 +353,6 @@ $(document).ready(function() {
         let originalKeywords = bookRow.data('original-keywords');
         let originalGenre = bookRow.data('original-genre');
 
-        console.log("Resetting to default:", originalTitle, originalDescription, originalGenre, originalKeywords);
 
         bookRow.find('.book-title').text(originalTitle);
         bookRow.find('.book-description').text(originalDescription);
@@ -424,6 +433,14 @@ $(document).ready(function() {
                 $('#update-publisher-address').val(address);
 
                 $('#updatePublisherModal').modal('show');
+            } else if (type === 'language') {
+                let languageId = $button.data('language_id');
+                let name = $button.data('language_name');
+                let code = $button.data('language_code');
+
+                $('#update-language-id').val(languageId);
+                $('#update-language-name').val(name);
+                $('#update-language-code').val(code);
             } else {
                 let bookId = $button.data('id');
                 let title = $button.data('title');
@@ -479,7 +496,6 @@ $(document).ready(function() {
             method: 'GET',
             dataType: 'html',
             success: function(response) {
-                console.log('Response received:', response);
                 let newContent = $('<div>').append($.parseHTML(response)).find('#main-content').html();
                 if (newContent) {
                     $('#main-content').html(newContent);
