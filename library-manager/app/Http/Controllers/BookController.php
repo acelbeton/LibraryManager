@@ -4,16 +4,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Book;
-use App\Models\Author;
-use App\Models\Genre;
 use App\Models\GenreTranslation;
 use App\Models\Keyword;
-use App\Models\Language;
-use App\Models\Publisher;
 use App\Models\Translation;
 use App\Traits\GetCachedData;
+use Exception;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
@@ -40,7 +38,7 @@ class BookController extends Controller
             $cachedData = $this->getCachedData();
 
             return view('books.create-book', array_merge(['books' => $books, 'selectedLanguageId' => $selectedLanguageId], $cachedData));
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Error fetching books: ' . $e->getMessage());
             return redirect()->back()->with('error', 'An error occurred while retrieving books.');
         }
@@ -56,21 +54,31 @@ class BookController extends Controller
             return response()->json(['success' => false, 'errors' => 'Validation failed. Please check your input.'], 422);
         }
 
-        $searchTerm = $request->input('search_term');
+        try {
 
-        $books = $this->searchBookQuery($searchTerm)
-            ->with(['author', 'genre', 'publisher', 'keywords'])
-            ->paginate(10);
 
-        $cachedData = $this->getCachedData();
+            $searchTerm = $request->input('search_term');
 
-        $html = view('partials.booksList', array_merge(['books' => $books], $cachedData))->render();
+            $books = $this->searchBookQuery($searchTerm)
+                ->with(['author', 'genre', 'publisher', 'keywords'])
+                ->paginate(10);
 
-        if ($books->isEmpty()) {
-            return response()->json(['success' => false, 'html' => $html, 'errors' => 'No results found.']);
+            $cachedData = $this->getCachedData();
+
+            $html = view('partials.booksList', array_merge(['books' => $books], $cachedData))->render();
+
+            if ($books->isEmpty()) {
+                return response()->json(['success' => false, 'html' => $html, 'errors' => 'No results found.']);
+            }
+
+            return response()->json(['success' => true, 'html' => $html]);
+        } catch (QueryException $e) {
+            Log::error('Database error during book search: ' . $e->getMessage());
+            return response()->json(['success' => false, 'error' => 'A database error occurred. Please try again later.'], 500);
+        } catch (Exception $e) {
+            Log::error('Unexpected error during book search: ' . $e->getMessage());
+            return response()->json(['success' => false, 'error' => 'An unexpected error occurred. Please try again later.'], 500);
         }
-
-        return response()->json(['success' => true, 'html' => $html]);
     }
 
     public function getSuggestions(Request $request) {
@@ -82,18 +90,23 @@ class BookController extends Controller
             return response()->json(['html' => '']);
         }
 
-        $searchTerm = $request->input('search_term');
+        try {
+            $searchTerm = $request->input('search_term');
 
-        $results = $this->searchBookQuery($searchTerm)
-            ->limit(5)
-            ->get()
-            ->filter(function ($result) {
-                return isset($result->title) || isset($result->name);
-            });
+            $results = $this->searchBookQuery($searchTerm)
+                ->limit(5)
+                ->get()
+                ->filter(function ($result) {
+                    return isset($result->title) || isset($result->name);
+                });
 
-        $html = view('partials.suggestionsList', compact('results'))->render();
+            $html = view('partials.suggestionsList', compact('results'))->render();
 
-        return response()->json(['html' => $html]);
+            return response()->json(['html' => $html]);
+        } catch (Exception $e) {
+            Log::error('Unexpected error during suggestions: ' . $e->getMessage());
+            return response()->json(['html' => '']);
+        }
     }
 
     public function store(Request $request)
@@ -133,8 +146,11 @@ class BookController extends Controller
             $html = view('partials.booksList', array_merge(['books' => $books], $cachedData))->render();
 
             return response()->json(['success' => true,'message' => 'Book added successfully!', 'html' => $html], 201);
-        } catch (\Exception $e) {
-            Log::error($e->getMessage());
+        } catch (QueryException $e) {
+            Log::error('Database error during book creation: ' . $e->getMessage());
+            return response()->json(['success' => false, 'error' => 'A database error occurred. Please try again later.'], 500);
+        } catch (Exception $e) {
+            Log::error('Unexpected error during book creation: ' . $e->getMessage());
             return response()->json(['success' => false, 'error' => 'An unexpected error occurred. Please try again later.'], 500);
         }
     }
@@ -191,8 +207,14 @@ class BookController extends Controller
             $html = view('partials.booksList', array_merge(['books' => $books], $cachedData))->render();
 
             return response()->json(['success' => true, 'message' => 'Book updated successfully!', 'html' => $html]);
-        } catch (\Exception $e) {
-            Log::error($e->getMessage());
+        } catch (ModelNotFoundException $e) {
+            Log::error('Book not found: ' . $e->getMessage());
+            return response()->json(['success' => false, 'error' => 'Book not found. Please check your input.'], 404);
+        } catch (QueryException $e) {
+            Log::error('Database error during book update: ' . $e->getMessage());
+            return response()->json(['success' => false, 'error' => 'A database error occurred. Please try again later.'], 500);
+        } catch (Exception $e) {
+            Log::error('Unexpected error during book update: ' . $e->getMessage());
             return response()->json(['success' => false, 'error' => 'An unexpected error occurred. Please try again later.'], 500);
         }
     }
@@ -220,9 +242,15 @@ class BookController extends Controller
             $html = view('partials.booksList', array_merge(['books' => $books], $cachedData))->render();
 
             return response()->json(['success' => true,'message' => 'Book deleted successfully!', 'html' => $html]);
-        } catch (\Exception $e) {
-            Log::error($e->getMessage());
-            return response()->json(['success' => false, 'errors' => 'An unexpected error occurred. Please try again.'], 500);
+        } catch (ModelNotFoundException $e) {
+            Log::error('Book not found for deletion: ' . $e->getMessage());
+            return response()->json(['success' => false, 'errors' => 'Book not found. Please check your input.'], 404);
+        } catch (QueryException $e) {
+            Log::error('Database error during book deletion: ' . $e->getMessage());
+            return response()->json(['success' => false, 'errors' => 'A database error occurred. Please try again later.'], 500);
+        } catch (Exception $e) {
+            Log::error('Unexpected error during book deletion: ' . $e->getMessage());
+            return response()->json(['success' => false, 'errors' => 'An unexpected error occurred. Please try again later.'], 500);
         }
     }
 
@@ -248,8 +276,11 @@ class BookController extends Controller
                 'translated_keywords' => $translatedKeywords,
                 'translated_genre_name' => $translatedGenreName ?? $book->genre->name,
             ]);
-        } catch (\Exception $e) {
-            Log::error('Error fetching translation for book: ' . $e->getMessage());
+        } catch (QueryException $e) {
+            Log::error('Database error fetching translation for book: ' . $e->getMessage());
+            return response()->json(['success' => false, 'error' => 'A database error occurred. Please try again later.'], 500);
+        } catch (Exception $e) {
+            Log::error('Unexpected error fetching translation for book: ' . $e->getMessage());
             return response()->json(['success' => false, 'error' => 'An unexpected error occurred. Please try again later.'], 500);
         }
     }
@@ -269,8 +300,11 @@ class BookController extends Controller
                 ->orWhereHas('keywords', function ($query) use ($searchTerm) {
                     $query->where('keyword', 'LIKE', '%' . $searchTerm . '%');
                 });
-        } catch (\Exception $e) {
+        } catch (QueryException $e) {
             Log::error('Error searching for books: ' . $e->getMessage());
+            return null;
+        } catch (Exception $e) {
+            Log::error('Unexpected error searching for books: ' . $e->getMessage());
             return null;
         }
     }
