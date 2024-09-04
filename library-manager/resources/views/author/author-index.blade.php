@@ -2,18 +2,19 @@
 
 @section('content')
     <div class="container mt-5">
-        <h2>Authors</h2>
-
-        <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#createAuthorModal">
-            Add New Author
-        </button>
-
+        <h2 class="text-center">Authors</h2>
+        <div class="row mb-3 justify-content-center">
+            <div class="col-md-4 mb-3">
+                <button class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#createAuthorModal">
+                    Add New Author
+                </button>
+            </div>
+        </div>
         <div id="authorsList">
             @include('partials.authorsList')
         </div>
     </div>
 
-    <!-- Create Author Modal -->
     <div class="modal fade" id="createAuthorModal" tabindex="-1" aria-labelledby="createAuthorModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -42,7 +43,6 @@
         </div>
     </div>
 
-    <!-- Update Author Modal -->
     <div class="modal fade" id="updateAuthorModal" tabindex="-1" aria-labelledby="updateAuthorModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">

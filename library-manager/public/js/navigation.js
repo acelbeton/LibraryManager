@@ -2,66 +2,62 @@ $(document).ready(function() {
     const englishLanguageId = "1";
 
     function initializeAll() {
-        reinitializeEventListeners();
+        detachPreviousListeners();
+        attachEventListeners()
     }
 
-    function reinitializeEventListeners() {
+    function detachPreviousListeners() {
         $(document).off();
+    }
 
+    function attachEventListeners() {
+        setupFormSubmissions();
+        setupDeletions();
+        setupSuggestions();
+        setupModals();
+        setupLanguageSelectors();
+    }
+
+    function setupFormSubmissions() {
         handleFormSubmission('#create-book-form', '#createBookModal', '#booksList');
         handleFormSubmission('#update-book-form', '#updateBookModal', '#booksList');
         handleFormSubmission('#translate-book-form', '#addTranslationModal', '#booksList');
-
         handleFormSubmission('#create-genre-form', '#createGenreModal', '#genresList');
         handleFormSubmission('#add-translation-form', '#addGenreTranslationModal', '#genresList');
-
-        handleDeletion('.delete-book', '/books/destroy', '#booksList', 'Are you sure you want to delete this book?');
-
-        handleDeletion('.delete-genre', '/genres/destroy', '#genresList', 'Are you sure you want to delete this genre?');
-
+        handleFormSubmission('#update-genre-form', '#updateGenreModal', '#genresList');
+        handleFormSubmission('#create-author-form','#createAuthorModal', '#authorsList');
+        handleFormSubmission('#update-author-form', '#updateAuthorModal', '#authorsList');
+        handleFormSubmission('#create-publisher-form','#createPublisherModal', '#publishersList');
+        handleFormSubmission('#update-publisher-form', '#updatePublisherModal', '#publishersList');
+        handleFormSubmission('#create-language-form','#createLanguageModal', '#languagesList');
+        handleFormSubmission('#update-language-form', '#updateLanguageModal', '#languagesList');
         handleSearchSubmission('#search-book', '#booksList');
-        handleUpdate('.update-book', 'book');
-        handleSuggestions('#search_term', '/books/suggestions', null, '#suggestions');
+    }
 
+    function setupDeletions() {
+        handleDeletion('.delete-book', '/books/destroy', '#booksList', 'Are you sure you want to delete this book?');
+        handleDeletion('.delete-genre', '/genres/destroy', '#genresList', 'Are you sure you want to delete this genre?');
+        handleDeletion('.delete-author', '/authors/destroy', '#authorsList', 'Are you sure you want to delete this author?');
+        handleDeletion('.delete-publisher', '/publishers/destroy', '#publishersList', 'Are you sure you want to delete this Publisher?');
+        handleDeletion('.delete-language', '/languages/destroy', '#languagesList', 'Are you sure you want to delete this Language?');
+    }
+
+    function setupSuggestions() {
+        handleSuggestions('#search_term', '/books/suggestions', null, '#suggestions');
         handleSuggestions('#author-search', '/author/suggestions', '#author_id', '#author-suggestions');
         handleSuggestions('#genre-search', '/genre/suggestions', '#genre_id', '#genre-suggestions');
         handleSuggestions('#publisher-search', '/publisher/suggestions', '#publisher_id', '#publisher-suggestions');
-
         handleSuggestions('#update-author-search', '/author/suggestions', '#update-author_id', '#update-author-suggestions');
         handleSuggestions('#update-genre-search', '/genre/suggestions', '#update-genre_id', '#update-genre-suggestions');
         handleSuggestions('#update-publisher-search', '/publisher/suggestions', '#update-publisher_id', '#update-publisher-suggestions');
+    }
 
-        handleFormSubmission('#update-genre-form', '#updateGenreModal', '#genresList');
+    function setupModals() {
         handleUpdateGenre('.update-genre');
-
-        handleFormSubmission('#create-author-form','#createAuthorModal', '#authorsList');
-        handleDeletion('.delete-author', '/authors/destroy', '#authorsList', 'Are you sure you want to delete this author?');
-        handleFormSubmission('#update-author-form', '#updateAuthorModal', '#authorsList');
+        handleUpdate('.update-book', 'book');
         handleUpdate('.update-author', 'author');
-
-        handleFormSubmission('#create-publisher-form','#createPublisherModal', '#publishersList');
-        handleDeletion('.delete-publisher', '/publishers/destroy', '#publishersList', 'Are you sure you want to delete this Publisher?');
-        handleFormSubmission('#update-publisher-form', '#updatePublisherModal', '#publishersList');
         handleUpdate('.update-publisher', 'publisher');
-
-        handleFormSubmission('#create-language-form','#createLanguageModal', '#languagesList');
-        handleDeletion('.delete-language', '/languages/destroy', '#languagesList', 'Are you sure you want to delete this Language?');
-        handleFormSubmission('#update-language-form', '#updateLanguageModal', '#languagesList');
         handleUpdate('.update-language', 'language');
-
-        $('.select-language').on('change', function() {
-            let bookId = $(this).data('book-id');
-            let languageId = $(this).val();
-
-            console.log('Language selected:', languageId, 'Book ID:', bookId);
-
-            if (languageId === englishLanguageId) {
-                console.log('Resetting to default language');
-                resetBookDataToDefault(bookId);
-            } else {
-                fetchTranslatedBookData(bookId, languageId);
-            }
-        });
 
         $('.add-translation').on('click', function() {
             let bookId = $(this).data('book_id');
@@ -91,6 +87,22 @@ $(document).ready(function() {
             let genreId = $('#translation-genre-id').val();
             let languageId = $(this).val();
             fetchGenreTranslation(genreId, languageId);
+        });
+    }
+
+    function setupLanguageSelectors() {
+        $(document).on('change', '.select-language', function() {
+            let bookId = $(this).data('book-id');
+            let languageId = $(this).val();
+
+            console.log('Language selected:', languageId, 'Book ID:', bookId);
+
+            if (languageId === englishLanguageId) {
+                console.log('Resetting to default language');
+                resetBookDataToDefault(bookId);
+            } else {
+                fetchTranslatedBookData(bookId, languageId);
+            }
         });
     }
 
@@ -186,7 +198,7 @@ $(document).ready(function() {
                                     $('.modal-backdrop').remove();
                                     $form[0].reset();
                                     $('#message').empty();
-                                    reinitializeEventListeners();
+                                    attachEventListeners();
                                     showToast('Translation updated successfully.', 'success');
                                 },
                                 error: function(xhr) {
@@ -204,7 +216,7 @@ $(document).ready(function() {
                         $('.modal-backdrop').remove();
                         $form[0].reset();
                         $('#message').empty();
-                        reinitializeEventListeners();
+                        attachEventListeners();
                         showToast(response.message, 'success');
                     }
                 },
@@ -237,7 +249,7 @@ $(document).ready(function() {
               success: function(response) {
                   if (response.html) {
                       $(listId).html(response.html);
-                      reinitializeEventListeners();
+                      attachEventListeners();
                   }
               },
               error: function(xhr) {
@@ -271,7 +283,7 @@ $(document).ready(function() {
                     success: function(response) {
                         if (response.html) {
                             $(listId).html(response.html);
-                            reinitializeEventListeners();
+                            attachEventListeners();
                             showToast('Item deleted successfully.', 'success');
                         }
                     },
@@ -352,7 +364,6 @@ $(document).ready(function() {
             }
         });
 
-        // Handle suggestion click
         $(document).on('click', `${suggestionsListId} .suggestion-item`, function () {
             const id = $(this).data('id');
             const name = $(this).data('name');
@@ -559,6 +570,7 @@ $(document).ready(function() {
             loadContent(event.state.path, false);
         }
     };
+
 
     initializeAll();
 });

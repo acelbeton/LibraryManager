@@ -1,24 +1,26 @@
-@import 'variables';
 @import 'mixins';
+@import 'variables';
 
 .container {
     padding: 2rem;
     color: $text-color;
-    max-width: 90% !important;
+    max-width: $container-width-large;
+    margin: 0 auto;
+    width: auto;
 
     @include respond-to(small) {
         padding: 1rem;
+        max-width: $container-width-small;
+        overflow-x: hidden;
     }
-}
 
-.alert-success {
-    background-color: lighten($secondary-color, 40%);
-    color: $secondary-color;
-}
+    @include respond-to(medium) {
+        max-width: $container-width-medium;
+    }
 
-.alert-danger {
-    background-color: lighten($accent-color, 40%);
-    color: $accent-color;
+    @include respond-to(extra-large) {
+        max-width: $container-width-extra-large;
+    }
 }
 
 .table-custom {
@@ -26,10 +28,13 @@
     margin-top: 2rem;
     border: 1px solid $border-color;
     width: 100%;
+    margin: 0 auto; // This centers the table within its container
+    max-width: 100%; // Ensures the table does not overflow
 
     @include respond-to(small) {
-        overflow-x: auto;
         display: block;
+        width: 100%;
+        overflow-x: auto;
         white-space: nowrap;
     }
 
@@ -87,7 +92,13 @@
     img {
         border-radius: 4px;
         border: 1px solid $border-color;
-        max-width: 100%; // Make images responsive
+        max-width: 100%;
+        width: 250px;
+        height: auto;
+
+        @include respond-to(small) {
+            width: 100%;
+        }
     }
 
     .badge {
@@ -101,74 +112,5 @@
         @include respond-to(small) {
             font-size: 0.75rem;
         }
-    }
-}
-
-.modal-header {
-    background-color: $primary-color;
-    color: #fff;
-
-    .modal-title {
-        font-size: 1.5rem;
-        font-weight: bold;
-
-        @include respond-to(small) {
-            font-size: 1.25rem;
-        }
-    }
-}
-
-.modal-footer {
-    .btn-primary {
-        background-color: $secondary-color;
-        border: none;
-        &:hover {
-            background-color: darken($secondary-color, 10%);
-        }
-    }
-
-    .btn-secondary {
-        background-color: $muted-text-color;
-        border: none;
-        &:hover {
-            background-color: darken($muted-text-color, 10%);
-        }
-    }
-}
-
-.form-label {
-    font-weight: bold;
-    color: $text-color;
-
-    @include respond-to(small) {
-        font-size: 0.9rem;
-    }
-}
-
-.form-control {
-    background-color: $input-bg;
-    border: 1px solid lighten($text-color, 40%);
-    border-radius: 4px;
-    padding: 0.75rem;
-    transition: border-color 0.2s ease-in-out;
-
-    &:focus {
-        border-color: $primary-color;
-        box-shadow: 0 0 8px rgba($primary-color, 0.3);
-    }
-
-    @include respond-to(small) {
-        padding: 0.6rem;
-    }
-}
-
-.select-language {
-    width: 100%;
-    padding: 0.4rem;
-    background-color: $input-bg;
-    border: 1px solid lighten($text-color, 40%);
-
-    @include respond-to(small) {
-        padding: 0.3rem;
     }
 }

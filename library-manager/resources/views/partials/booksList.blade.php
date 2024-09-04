@@ -1,4 +1,4 @@
-<div class="container">
+<div>
     @if (session('success'))
         <div class="alert alert-success">
             {{ session('success') }}
@@ -16,7 +16,7 @@
             <h3>There are no books found.</h3>
         </div>
     @else
-        <table class="table-custom mt-4">
+        <table class="table-custom">
             <thead>
             <tr>
                 <th>Language</th>

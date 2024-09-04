@@ -3,12 +3,22 @@
 @section('content')
 
     <div class="container mt-5">
-        <h2>Books</h2>
-        <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#createBookModal">Create New Book</button>
+        <h2 class="text-center">Books</h2>
+        <div class="row mb-3 justify-content-center">
+            <div class="col-md-4 mb-3">
+                <button class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#createBookModal">
+                    Create New Book
+                </button>
+            </div>
+            <div id="searchbar">
+                @include('partials.searchbar')
+            </div>
+        </div>
     </div>
-    <div id="searchbar">
-        @include('partials.searchbar')
+    <div id="booksList">
+        @include('partials.booksList')
     </div>
+
 
     <div class="modal fade" id="createBookModal" tabindex="-1" aria-labelledby="createBookModalLabel" aria-hidden="true">
         <div class="modal-dialog">
@@ -72,10 +82,4 @@
             </div>
         </div>
     </div>
-
-
-    <div id="booksList">
-        @include('partials.booksList')
-    </div>
-
 @endsection

@@ -2,18 +2,20 @@
 
 @section('content')
     <div class="container mt-5">
-        <h2>Genres</h2>
-
-        <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#createGenreModal">
-            Add New Genre
-        </button>
+        <h2 class="text-center">Genres</h2>
+        <div class="row mb-3 justify-content-center">
+            <div class="col-md-4 mb-3">
+                <button class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#createGenreModal">
+                    Add New Genre
+                </button>
+            </div>
+        </div>
 
         <div id="genresList">
             @include('partials.genresList')
         </div>
     </div>
 
-    <!-- Create Genre Modal -->
     <div class="modal fade" id="createGenreModal" tabindex="-1" aria-labelledby="createGenreModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -38,7 +40,6 @@
         </div>
     </div>
 
-    <!-- Add or Update Genre Translation Modal -->
     <div class="modal fade" id="addGenreTranslationModal" tabindex="-1" aria-labelledby="addGenreTranslationModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -49,7 +50,7 @@
                 <form id="add-translation-form" action="{{ route('genres.translations.store') }}" method="POST">
                     @csrf
                     <input type="hidden" name="genre_id" id="translation-genre-id">
-                    <input type="hidden" name="translation_id" id="translation-id"> <!-- To track the translation if updating -->
+                    <input type="hidden" name="translation_id" id="translation-id">
                     <div class="modal-body">
                         <div class="mb-3">
                             <label for="genre-original-name" class="form-label">Original Genre Name</label>
@@ -79,7 +80,6 @@
         </div>
     </div>
 
-    <!-- Update Genre Modal -->
     <div class="modal fade" id="updateGenreModal" tabindex="-1" aria-labelledby="updateGenreModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">

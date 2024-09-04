@@ -2,11 +2,14 @@
 
 @section('content')
     <div class="container mt-5">
-        <h2>Languages</h2>
-
-        <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#createLanguageModal">
-            Add New Language
-        </button>
+        <h2 class="text-center">Languages</h2>
+        <div class="row mb-3 justify-content-center">
+            <div class="col-md-4 mb-3">
+                <button class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#createLanguageModal">
+                    Add New Language
+                </button>
+            </div>
+        </div>
 
         <div id="languagesList">
             @include('partials.languagesList')
@@ -41,7 +44,6 @@
         </div>
     </div>
 
-    <!-- Update Author Modal -->
     <div class="modal fade" id="updateLanguageModal" tabindex="-1" aria-labelledby="updateLanguageModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
