@@ -1,0 +1,124 @@
+@import 'variables';
+@import 'mixins';
+
+.navbar {
+    background-color: $primary-color;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    box-sizing: border-box;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    transition: all 0.3s ease-in-out;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+
+    .navbar-wrapper {
+        width: 100%;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .navbar-brand {
+        color: lighten($secondary-color, 60%);
+        font-size: 1.4rem;
+        font-weight: bold;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+
+        &:hover {
+            color: $link-hover-color;
+            text-decoration: none;
+        }
+
+        @include respond-to(small) {
+            font-size: 1.2rem;
+        }
+    }
+
+    .navbar-toggler {
+        display: block;
+        border: none;
+        background-color: $secondary-color;
+        cursor: pointer;
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+
+        &:hover {
+            background-color: $link-hover-color;
+        }
+
+        .navbar-toggler-icon {
+            width: 24px;
+            height: 24px;
+            background-size: cover;
+            filter: invert(1);
+        }
+
+        @include respond-to(medium) {
+            display: none;
+        }
+    }
+
+    .navbar-collapse {
+        flex-grow: 1;
+        display: none;
+        flex-direction: column;
+        width: 100%;
+        justify-content: flex-end;
+
+        &.show {
+            display: flex;
+        }
+
+        @include respond-to(medium) {
+            display: flex;
+            flex-direction: row;
+            width: auto;
+            justify-content: flex-end;
+        }
+    }
+
+    .navbar-nav {
+        display: flex;
+        flex-direction: column;
+
+        @include respond-to(medium) {
+            flex-direction: row;
+        }
+
+        .nav-item {
+            margin: 0.5rem 0;
+
+            @include respond-to(medium) {
+                margin: 0 0.5rem;
+            }
+
+            .nav-link {
+                color: lighten($secondary-color, 60%);
+                font-size: 1.2rem;
+                padding: 0.5rem 1rem;
+                border-radius: 4px;
+                transition: background-color 0.2s ease-in-out;
+
+                &:hover {
+                    background-color: rgba(255, 255, 255, 0.1);
+                    color: $link-hover-color;
+                    text-decoration: none;
+                }
+
+                @include respond-to(small) {
+                    font-size: 1.1rem;
+                    padding: 0.4rem 0.8rem;
+                }
+            }
+        }
+    }
+
+    @include respond-to(small) {
+        padding: 0.5rem;
+    }
+}

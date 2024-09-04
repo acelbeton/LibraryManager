@@ -16,7 +16,7 @@
             <h3>There are no books found.</h3>
         </div>
     @else
-        <table class="table table-bordered table-hover mt-4">
+        <table class="table-custom mt-4">
             <thead>
             <tr>
                 <th>Language</th>

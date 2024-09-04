@@ -1,0 +1,32 @@
+@import 'variables';
+
+@mixin respond-to($breakpoint) {
+    @if $breakpoint == small {
+        @media (max-width: $breakpoint-small) { @content; }
+    } @else if $breakpoint == medium {
+        @media (min-width: $breakpoint-medium) { @content; }
+    } @else if $breakpoint == large {
+        @media (min-width: $breakpoint-large) { @content; }
+    } @else if $breakpoint == extra-large {
+        @media (min-width: $breakpoint-extra-large) { @content; }
+    }
+}
+
+@mixin font-size($size) {
+    font-size: $size;
+    @include respond-to(small) {
+        font-size: max($size * 0.875, 12px);
+    }
+}
+
+@mixin button($text-color, $background-color) {
+    color: $text-color;
+    background-color: $background-color;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    &:hover {
+        opacity: 0.9;
+    }
+}

@@ -6,6 +6,8 @@ $(document).ready(function() {
     }
 
     function reinitializeEventListeners() {
+        $(document).off();
+
         handleFormSubmission('#create-book-form', '#createBookModal', '#booksList');
         handleFormSubmission('#update-book-form', '#updateBookModal', '#booksList');
         handleFormSubmission('#translate-book-form', '#addTranslationModal', '#booksList');
@@ -104,7 +106,7 @@ $(document).ready(function() {
                 }
             },
             error: function(xhr) {
-                console.error('Error fetching translation');
+                showToast('Error fetching genre translation.', 'error');
                 $('#translated_name').val('');
             }
         });
@@ -125,7 +127,7 @@ $(document).ready(function() {
                 }
             },
             error: function(xhr) {
-                console.error('Error fetching translation');
+                showToast('Error fetching book translation.', 'error');
                 $('#translate-title').val('');
                 $('#translate-description').val('');
                 $('#keywords').val('');
@@ -275,9 +277,6 @@ $(document).ready(function() {
                     },
                     error: function(xhr) {
                         let errorMessage = 'There was an error';
-
-                        console.log('xhr.responseJSON:', xhr.responseJSON);
-
                         if (xhr.responseJSON && xhr.responseJSON.errors) {
                             let errors = xhr.responseJSON.errors;
 
@@ -302,48 +301,80 @@ $(document).ready(function() {
 
 
     function handleSuggestions(inputId, suggestionsUrl, hiddenInputId = null, suggestionsListId) {
+        let typingTimer;
+        const debounceDelay = 300;
+        let currentRequest = null;
+        let disableKeyup = false;
+
+        function fetchSuggestions(query) {
+            if (currentRequest) {
+                currentRequest.abort();
+            }
+
+            currentRequest = $.ajax({
+                url: suggestionsUrl,
+                method: 'GET',
+                data: { search_term: query },
+                success: function (response) {
+                    if (response.html) {
+                        $(suggestionsListId).html(response.html).show();
+                    } else {
+                        $(suggestionsListId).empty().hide();
+                    }
+                },
+                error: function (xhr) {
+                    if (xhr.statusText !== "abort") {
+                        showToast('Error fetching suggestions.', 'error');
+                    }
+                    $(suggestionsListId).empty().hide();
+                },
+                complete: function () {
+                    currentRequest = null;
+                }
+            });
+        }
+
         $(document).on('keyup', inputId, function () {
+            clearTimeout(typingTimer);
+
+            if (disableKeyup) {
+                return;
+            }
+
             let query = $(this).val().trim();
 
             if (query.length > 1) {
-                $.ajax({
-                    url: suggestionsUrl,
-                    method: 'GET',
-                    data: { search_term: query },
-                    success: function(response) {
-                        if (response.html) {
-                            $(suggestionsListId).html(response.html);
-                            $(suggestionsListId).show();
-                        } else {
-                            $(suggestionsListId).empty().hide();
-                        }
-                    },
-                    error: function(xhr) {
-                        console.error('ERROR SUGGESTION:', xhr);
-                        $(suggestionsListId).empty().hide();
-                    }
-                });
+                typingTimer = setTimeout(function () {
+                    fetchSuggestions(query);
+                }, debounceDelay);
             } else {
                 $(suggestionsListId).empty().hide();
             }
         });
 
+        // Handle suggestion click
         $(document).on('click', `${suggestionsListId} .suggestion-item`, function () {
             const id = $(this).data('id');
             const name = $(this).data('name');
+
             if (hiddenInputId) {
                 $(hiddenInputId).val(id);
             }
             $(inputId).val(name);
+
+            disableKeyup = true;
+            setTimeout(() => disableKeyup = false, 200);
+
             $(suggestionsListId).empty().hide();
         });
 
-        $(inputId).on('focusout', function() {
-            setTimeout(function() {
+        $(inputId).on('focusout', function () {
+            setTimeout(function () {
                 $(suggestionsListId).empty().hide();
             }, 200);
         });
     }
+
 
 
     function resetBookDataToDefault(bookId) {
@@ -400,7 +431,6 @@ $(document).ready(function() {
                 }
             },
             error: function(xhr) {
-                console.error('ERROR SUGGESTION:', xhr);
                 showToast('An error occurred while fetching the translation.', 'error');
             }
         });
@@ -504,7 +534,7 @@ $(document).ready(function() {
                     }
                     initializeAll();
                 } else {
-                    console.error('HTML content not found in the response');
+                    showToast('HTML content not found in the response.', 'error');
                 }
             },
             error: function(xhr) {

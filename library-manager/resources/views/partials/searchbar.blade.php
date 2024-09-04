@@ -3,7 +3,7 @@
         @csrf
         <div class="d-flex justify-content-between align-items-center">
             <div class="w-100">
-                <input type="text" name="search_term" id="search_term" placeholder="Search Books" class="form-control w-100" autocomplete="off">
+                <input type="text" name="search_term" id="search_term" placeholder="Search Books" class="form-control " autocomplete="off">
                 <div id="suggestions" class="suggestions-list mt-1"></div>
             </div>
         </div>

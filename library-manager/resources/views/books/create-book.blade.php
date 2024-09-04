@@ -33,21 +33,21 @@
 
                         <div class="mb-3">
                             <label for="author-search" class="form-label">Author</label>
-                            <input type="text" id="author-search" class="form-control" placeholder="Search author" required>
+                            <input type="text" name="author_name" id="author-search" class="form-control" placeholder="Search author" required>
                             <input type="hidden" name="author_id" id="author_id">
                             <div id="author-suggestions" class="suggestions-list"></div>
                         </div>
 
                         <div class="mb-3">
                             <label for="genre-search" class="form-label">Genre</label>
-                            <input type="text" id="genre-search" class="form-control" placeholder="Search genre" required>
+                            <input type="text" name="genre_name" id="genre-search" class="form-control" placeholder="Search genre" required>
                             <input type="hidden" name="genre_id" id="genre_id">
                             <div id="genre-suggestions" class="suggestions-list"></div>
                         </div>
 
                         <div class="mb-3">
                             <label for="publisher-search" class="form-label">Publisher</label>
-                            <input type="text" id="publisher-search" class="form-control" placeholder="Search publisher" required>
+                            <input type="text" name="publisher_name" id="publisher-search" class="form-control" placeholder="Search publisher" required>
                             <input type="hidden" name="publisher_id" id="publisher_id">
                             <div id="publisher-suggestions" class="suggestions-list"></div>
                         </div>

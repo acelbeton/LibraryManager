@@ -3,9 +3,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Author;
 use App\Models\Book;
+use App\Models\Genre;
 use App\Models\GenreTranslation;
 use App\Models\Keyword;
+use App\Models\Publisher;
 use App\Models\Translation;
 use App\Traits\GetCachedData;
 use Exception;
@@ -13,6 +16,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class BookController extends Controller
@@ -115,20 +119,55 @@ class BookController extends Controller
             $validatedData = $request->validate([
                 'title' => 'required|string|max:255',
                 'description' => 'nullable|string',
-                'author_id' => 'required|exists:authors,id',
-                'genre_id' => 'required|exists:genres,id',
-                'publisher_id' => 'required|exists:publishers,id',
+                'author_id' => 'nullable|exists:authors,id',
+                'author_name' => 'nullable|string|max:255',
+                'genre_id' => 'nullable|exists:genres,id',
+                'genre_name' => 'nullable|string|max:255',
+                'publisher_id' => 'nullable|exists:publishers,id',
+                'publisher_name' => 'nullable|string|max:255',
                 'default_language_id' => 'required|exists:languages,id',
                 'cover_image' => 'nullable|image|max:2048',
                 'keywords' => 'nullable|array',
                 'keywords.*' => 'nullable|string|max:255',
             ]);
 
+            if (!empty($validatedData['author_id'])) {
+                $author = Author::find($validatedData['author_id']);
+            } elseif (!empty($validatedData['author_name'])) {
+                $author = Author::firstOrCreate(['name' => $validatedData['author_name'], 'bio' => "No bio yet."]);
+            } else {
+                return response()->json(['success' => false, 'error' => 'Author information is required.'], 422);
+            }
+
+            if (!empty($validatedData['genre_id'])) {
+                $genre = Genre::find($validatedData['genre_id']);
+            } elseif (!empty($validatedData['genre_name'])) {
+                $genre = Genre::firstOrCreate(['name' => $validatedData['genre_name']]);
+            } else {
+                return response()->json(['success' => false, 'error' => 'Genre information is required.'], 422);
+            }
+
+            if (!empty($validatedData['publisher_id'])) {
+                $publisher = Publisher::find($validatedData['publisher_id']);
+            } elseif (!empty($validatedData['publisher_name'])) {
+                $publisher = Publisher::firstOrCreate(['name' => $validatedData['publisher_name'], 'address' => 'No address yet.']);
+            } else {
+                return response()->json(['success' => false, 'error' => 'Publisher information is required.'], 422);
+            }
+
             if ($request->hasFile('cover_image')) {
                 $validatedData['cover_image'] = $request->file('cover_image')->store('cover_images', 'public');
             }
 
-            $book = Book::create($validatedData);
+            $book = Book::create([
+                'title' => $validatedData['title'],
+                'description' => $validatedData['description'],
+                'author_id' => $author->id,
+                'genre_id' => $genre->id,
+                'publisher_id' => $publisher->id,
+                'default_language_id' => $validatedData['default_language_id'],
+                'cover_image' => $validatedData['cover_image'] ?? null,
+            ]);
 
             if(!empty($validatedData['keywords'])) {
                 foreach ($validatedData['keywords'] as $keyword) {
@@ -232,7 +271,7 @@ class BookController extends Controller
             $book = Book::findOrFail($request->id);
 
             if ($book->cover_image) {
-                \Storage::disk('public')->delete($book->cover_image);
+                Storage::disk('public')->delete($book->cover_image);
             }
 
             $book->delete();

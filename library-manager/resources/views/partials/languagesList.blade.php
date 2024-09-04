@@ -1,4 +1,4 @@
-<table class="table table-bordered table-hover">
+<table class="table-custom">
     <thead>
     <tr>
         <th>Language Name</th>
@@ -19,8 +19,6 @@
                         data-bs-toggle="modal" data-bs-target="#updateLanguageModal">
                     Update
                 </button>
-            </td>
-            <td>
                 <button class="btn btn-danger delete-language" data-id="{{ $language->id }}">Delete</button>
             </td>
         </tr>

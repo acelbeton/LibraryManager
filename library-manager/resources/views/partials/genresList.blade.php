@@ -1,4 +1,4 @@
-<table class="table table-bordered table-hover">
+<table class="table-custom">
     <thead>
     <tr>
         <th>Name</th>
@@ -13,16 +13,12 @@
                 <button class="btn btn-primary add-genre-translation" data-id="{{ $genre->id }}" data-name="{{ $genre->name }}" data-bs-toggle="modal" data-bs-target="#addGenreTranslationModal">
                     Add Translations
                 </button>
-            </td>
-            <td>
                 <button class="btn btn-warning update-genre"
                         data-id="{{ $genre->id }}"
                         data-name="{{ $genre->name }}"
                         data-bs-toggle="modal" data-bs-target="#updateGenreModal">
                     Update
                 </button>
-            </td>
-            <td>
                 <button class="btn btn-danger delete-genre" data-id="{{ $genre->id }}">Delete</button>
             </td>
         </tr>
