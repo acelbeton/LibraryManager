@@ -20,5 +20,13 @@ class KeywordsSeeder extends Seeder
         Keyword::create(['keyword' => 'Dystopique', 'language_id' => 2]);
         Keyword::create(['keyword' => 'Magie', 'language_id' => 2]);
         Keyword::create(['keyword' => 'Aventure', 'language_id' => 2]);
+
+        Keyword::create(['keyword' => 'Distópico', 'language_id' => 3]);
+        Keyword::create(['keyword' => 'Magia', 'language_id' => 3]);
+        Keyword::create(['keyword' => 'Aventura', 'language_id' => 3]);
+
+        Keyword::create(['keyword' => 'Disztópikus', 'language_id' => 4]);
+        Keyword::create(['keyword' => 'Mágia', 'language_id' => 4]);
+        Keyword::create(['keyword' => 'Kaland', 'language_id' => 4]);
     }
 }

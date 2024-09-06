@@ -41,6 +41,11 @@ class BookController extends Controller
 
             $cachedData = $this->getCachedData();
 
+            if ($request->ajax() && $request->input('partial')) {
+                $html = view('partials.booksList', array_merge(['books' => $books], $cachedData))->render();
+                return response()->json(['html' => $html]);
+            }
+
             return view('books.create-book', array_merge(['books' => $books, 'selectedLanguageId' => $selectedLanguageId], $cachedData));
         } catch (Exception $e) {
             Log::error('Error fetching books: ' . $e->getMessage());
@@ -131,29 +136,9 @@ class BookController extends Controller
                 'keywords.*' => 'nullable|string|max:255',
             ]);
 
-            if (!empty($validatedData['author_id'])) {
-                $author = Author::find($validatedData['author_id']);
-            } elseif (!empty($validatedData['author_name'])) {
-                $author = Author::firstOrCreate(['name' => $validatedData['author_name'], 'bio' => "No bio yet."]);
-            } else {
-                return response()->json(['success' => false, 'error' => 'Author information is required.'], 422);
-            }
-
-            if (!empty($validatedData['genre_id'])) {
-                $genre = Genre::find($validatedData['genre_id']);
-            } elseif (!empty($validatedData['genre_name'])) {
-                $genre = Genre::firstOrCreate(['name' => $validatedData['genre_name']]);
-            } else {
-                return response()->json(['success' => false, 'error' => 'Genre information is required.'], 422);
-            }
-
-            if (!empty($validatedData['publisher_id'])) {
-                $publisher = Publisher::find($validatedData['publisher_id']);
-            } elseif (!empty($validatedData['publisher_name'])) {
-                $publisher = Publisher::firstOrCreate(['name' => $validatedData['publisher_name'], 'address' => 'No address yet.']);
-            } else {
-                return response()->json(['success' => false, 'error' => 'Publisher information is required.'], 422);
-            }
+            $author = $this->getOrCreateAuthor($validatedData);
+            $genre = $this->getOrCreateGenre($validatedData);
+            $publisher = $this->getOrCreatePublisher($validatedData);
 
             if ($request->hasFile('cover_image')) {
                 $validatedData['cover_image'] = $request->file('cover_image')->store('cover_images', 'public');
@@ -178,6 +163,7 @@ class BookController extends Controller
 
                     $book->keywords()->attach($keywordRecord->id);
                 }
+                $this->refreshCache('keywords', Keyword::class);
             }
 
             $books = Book::with(['author', 'genre', 'publisher', 'keywords'])->get();
@@ -200,9 +186,12 @@ class BookController extends Controller
                 'id' => 'required|exists:books,id',
                 'title' => 'required|string|max:255',
                 'description' => 'nullable|string',
-                'author_id' => 'required|exists:authors,id',
-                'genre_id' => 'required|exists:genres,id',
-                'publisher_id' => 'required|exists:publishers,id',
+                'author_id' => 'nullable|exists:authors,id',
+                'author_name' => 'nullable|string|max:255',
+                'genre_id' => 'nullable|exists:genres,id',
+                'genre_name' => 'nullable|string|max:255',
+                'publisher_id' => 'nullable|exists:publishers,id',
+                'publisher_name' => 'nullable|string|max:255',
                 'cover_image' => 'nullable|image|max:2048',
                 'keywords' => 'nullable|array',
                 'keywords.*' => 'nullable|string|max:255',
@@ -216,11 +205,9 @@ class BookController extends Controller
 
             $book = Book::findOrFail($validatedData['id']);
 
-            $book->title = $validatedData['title'];
-            $book->description = $validatedData['description'];
-            $book->author_id = $validatedData['author_id'];
-            $book->genre_id = $validatedData['genre_id'];
-            $book->publisher_id = $validatedData['publisher_id'];
+            $author = $this->getOrCreateAuthor($validatedData);
+            $genre = $this->getOrCreateGenre($validatedData);
+            $publisher = $this->getOrCreatePublisher($validatedData);
 
             if (!empty($validatedData['keywords'])) {
                 $book->keywords()->detach();
@@ -233,11 +220,18 @@ class BookController extends Controller
 
                     $book->keywords()->attach($keywordRecord->id);
                 }
+                $this->refreshCache('keywords', Keyword::class);
             }
 
             if ($request->hasFile('cover_image')) {
                 $book->cover_image = $request->file('cover_image')->store('cover_images', 'public');
             }
+
+            $book->title = $validatedData['title'];
+            $book->description = $validatedData['description'];
+            $book->author_id = $author->id;
+            $book->genre_id = $genre->id;
+            $book->publisher_id = $publisher->id;
 
             $book->save();
 
@@ -346,5 +340,20 @@ class BookController extends Controller
             Log::error('Unexpected error searching for books: ' . $e->getMessage());
             return null;
         }
+    }
+
+    private function getOrCreateAuthor($data)
+    {
+        return !empty($data['author_id']) ? Author::find($data['author_id']) : Author::firstOrCreate(['name' => $data['author_name']], ['bio' => 'No bio yet.']);
+    }
+
+    private function getOrCreateGenre($data)
+    {
+        return !empty($data['genre_id']) ? Genre::find($data['genre_id']) : Genre::firstOrCreate(['name' => $data['genre_name']]);
+    }
+
+    private function getOrCreatePublisher($data)
+    {
+        return !empty($data['publisher_id']) ? Publisher::find($data['publisher_id']) : Publisher::firstOrCreate(['name' => $data['publisher_name']], ['address' => 'No address yet.']);
     }
 }

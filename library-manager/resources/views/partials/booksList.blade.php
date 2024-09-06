@@ -1,4 +1,4 @@
-<div>
+<div class="table-responsive-wrapper">
     @if (session('success'))
         <div class="alert alert-success">
             {{ session('success') }}
@@ -49,12 +49,12 @@
                             @endif
                         </select>
                     </td>
-                    <td class="book-title">{{ $book->title }}</td>
-                    <td class="book-description">{{ $book->description }}</td>
-                    <td class="book-author">{{ $book->author->name }}</td>
-                    <td class="book-genre">{{ $book->genre->name }}</td>
-                    <td class="book-publisher">{{ $book->publisher->name }}</td>
-                    <td class="book-keywords">
+                    <td class="book-title" data-label="Title">{{ $book->title }}</td>
+                    <td class="book-description" data-label="Description">{{ $book->description }}</td>
+                    <td class="book-author" data-label="Author">{{ $book->author->name }}</td>
+                    <td class="book-genre" data-label="Genre">{{ $book->genre->name }}</td>
+                    <td class="book-publisher" data-label="Publisher">{{ $book->publisher->name }}</td>
+                    <td class="book-keywords" data-label="Keywords">
                         @php
                             $languageId = $selectedLanguageId ?? $book->default_language_id;
                             $keywords = $book->keywords->where('language_id', $languageId);
@@ -129,21 +129,21 @@
 
                 <div class="mb-3">
                     <label for="update-author-search" class="form-label">Author:</label>
-                    <input type="text" id="update-author-search" class="form-control" placeholder="Search author" required>
+                    <input type="text" name="author_name" id="update-author-search" class="form-control" placeholder="Search author" required>
                     <input type="hidden" name="author_id" id="update-author_id">
                     <div id="update-author-suggestions" class="suggestions-list"></div>
                 </div>
 
                 <div class="mb-3">
                     <label for="update-genre-search" class="form-label">Genre:</label>
-                    <input type="text" id="update-genre-search" class="form-control" placeholder="Search genre" required>
+                    <input type="text" name="genre_name" id="update-genre-search" class="form-control" placeholder="Search genre" required>
                     <input type="hidden" name="genre_id" id="update-genre_id">
                     <div id="update-genre-suggestions" class="suggestions-list"></div>
                 </div>
 
                 <div class="mb-3">
                     <label for="update-publisher-search" class="form-label">Publisher:</label>
-                    <input type="text" id="update-publisher-search" class="form-control" placeholder="Search publisher" required>
+                    <input type="text" name="publisher_name" id="update-publisher-search" class="form-control" placeholder="Search publisher" required>
                     <input type="hidden" name="publisher_id" id="update-publisher_id">
                     <div id="update-publisher-suggestions" class="suggestions-list"></div>
                 </div>
@@ -179,6 +179,18 @@
                     @csrf
                     <input type="hidden" name="book_id" id="translation-book-id">
                     <div class="mb-3">
+                        <label for="language_id" class="form-label">Language:</label>
+                        <select name="language_id" id="language_id" class="form-select" required>
+                            @if(isset($languages))
+                                @foreach($languages as $language)
+                                    @if($language->language_name !== 'English')
+                                        <option value="{{ $language->id }}">{{ $language->language_name }}</option>
+                                    @endif
+                                @endforeach
+                            @endif
+                        </select>
+                    </div>
+                    <div class="mb-3">
                         <label for="translate-title" class="form-label">Title:</label>
                         <input type="text" name="translated_title" id="translate-title" class="form-control" required>
                     </div>
@@ -190,19 +202,8 @@
                         <label for="keywords" class="form-label">Keywords</label>
                         <input type="text" name="keywords" id="translate-keywords" class="form-control" placeholder="Enter keywords separated by commas">
                     </div>
-                    <div class="mb-3">
-                        <select name="language_id" id="language_id" class="form-select" required>
-                            @if(isset($languages))
-                                @foreach($languages as $language)
-                                    @if($language->language_name !== 'English')
-                                        <option value="{{ $language->id }}">{{ $language->language_name }}</option>
-                                    @endif
-                                @endforeach
-                            @endif
-                        </select>
-                    </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
                         <button type="submit" class="btn btn-primary">Add Translation</button>
                     </div>
                 </form>

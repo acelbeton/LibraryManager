@@ -71,6 +71,8 @@ class TranslationController extends Controller
                 }
             }
 
+            $this->refreshCache('translations', Translation::class);
+
             $books = Book::with(['author', 'genre', 'publisher'])->get();
             $cachedData = $this->getCachedData();
             $html = view('partials.booksList', array_merge(['books' => $books], $cachedData))->render();

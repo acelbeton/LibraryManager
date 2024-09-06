@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Publisher;
+use App\Traits\GetCachedData;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
@@ -12,6 +13,8 @@ use Illuminate\Support\Facades\Validator;
 
 class PublisherController extends Controller
 {
+    use GetCachedData;
+
     public function index() {
         try {
             $publishers = Publisher::all();
@@ -35,6 +38,9 @@ class PublisherController extends Controller
             ]);
 
             $publishers = Publisher::all();
+
+            $this->refreshCache('publishers', Publisher::class);
+
             $html = view('partials.publishersList', compact('publishers'))->render();
 
             return response()->json(['success' => true, 'html' => $html, 'message' => 'Publisher added successfully']);
@@ -66,7 +72,10 @@ class PublisherController extends Controller
             $publisher->address = $validatedData['address'];
             $publisher->save();
 
+            $this->refreshCache('publishers', Publisher::class);
+
             $publishers = Publisher::all();
+
             $html = view('partials.publishersList', compact('publishers'))->render();
 
             return response()->json(['success' => true, 'html' => $html, 'message' => 'Publisher updated successfully']);
@@ -101,11 +110,13 @@ class PublisherController extends Controller
                 return response()->json([
                     'success' => false,
                     'html' => $html,
-                    'errors' => 'This Publisher cannot be deleted because it is associated with one or more books.'
+                    'error' => 'This Publisher cannot be deleted because it is associated with one or more books.'
                 ], 422);
             }
 
             $publisher->delete();
+
+            $this->refreshCache('publishers', Publisher::class);
 
             $publishers = Publisher::all();
             $html = view('partials.publishersList', compact('publishers'))->render();

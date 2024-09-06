@@ -29,4 +29,13 @@ class Book extends Model
     public function defaultLanguage() {
         return $this->belongsTo(Language::class, 'default_language_id');
     }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function ($book) {
+            $book->keywords()->detach();
+        });
+    }
 }

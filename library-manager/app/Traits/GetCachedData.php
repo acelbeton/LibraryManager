@@ -13,6 +13,13 @@ use Illuminate\Support\Facades\Cache;
 
 trait GetCachedData
 {
+    public function refreshCache($key, $modelClass) {
+        Cache::forget($key);
+        return Cache::remember($key, 60 * 60, function () use ($modelClass) {
+            return $modelClass::all();
+        });
+    }
+
     public function getCachedData()
     {
         $authors = Cache::remember('authors', 60 * 60, function () {

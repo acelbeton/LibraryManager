@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Genre;
 use App\Models\GenreTranslation;
 use App\Models\Language;
+use App\Traits\GetCachedData;
 use Exception;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
@@ -12,6 +13,8 @@ use Illuminate\Support\Facades\Log;
 
 class GenreTranslationController extends Controller
 {
+    use GetCachedData;
+
     public function store(Request $request)
     {
         try {
@@ -22,6 +25,8 @@ class GenreTranslationController extends Controller
             ]);
 
             GenreTranslation::create($validatedData);
+
+            $this->refreshCache('genreTranslations', GenreTranslation::class);
 
             $genres = Genre::all();
             $languages = Language::all();

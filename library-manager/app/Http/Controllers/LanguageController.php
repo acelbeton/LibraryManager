@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Language;
+use App\Traits\GetCachedData;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
@@ -12,6 +13,8 @@ use Exception;
 
 class LanguageController extends Controller
 {
+    use GetCachedData;
+
     public function index() {
         try {
             $languages = Language::all();
@@ -33,6 +36,8 @@ class LanguageController extends Controller
                 'language_name' => $validatedData['language_name'],
                 'language_code' => $validatedData['language_code']
             ]);
+
+            $this->refreshCache('languages', Language::class);
 
             $languages = Language::all();
             $html = view('partials.languagesList', compact('languages'))->render();
@@ -65,6 +70,8 @@ class LanguageController extends Controller
             $language->language_name = $validatedData['language_name'];
             $language->language_code = $validatedData['language_code'];
             $language->save();
+
+            $this->refreshCache('languages', Language::class);
 
             $languages = Language::all();
             $html = view('partials.languagesList', compact('languages'))->render();
@@ -105,11 +112,13 @@ class LanguageController extends Controller
                 return response()->json([
                     'success' => false,
                     'html' => $html,
-                    'errors' => 'This language cannot be deleted because it is associated with one or more books, translations, genre translations, or keywords.'
+                    'error' => 'This language cannot be deleted because it is associated with one or more books, translations, genre translations, or keywords.'
                 ], 422);
             }
 
             $language->delete();
+
+            $this->refreshCache('languages', Language::class);
 
             $languages = Language::all();
             $html = view('partials.languagesList', compact('languages'))->render();

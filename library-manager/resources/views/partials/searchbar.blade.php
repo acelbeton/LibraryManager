@@ -9,6 +9,7 @@
         </div>
         <div id="search-button" class="d-flex justify-content-center mt-3">
             <button type="submit" class="btn btn-primary">Search</button>
+            <button type="button" class="btn btn-primary" id="reset-books" data-url="{{ route('books.index') }}">Reset</button>
         </div>
     </form>
 </div>

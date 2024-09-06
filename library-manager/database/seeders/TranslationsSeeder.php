@@ -21,10 +21,38 @@ class TranslationsSeeder extends Seeder
         ]);
 
         Translation::create([
+            'book_id' => 1,
+            'language_id' => 3,
+            'translated_title' => '1984 (Spanish)',
+            'translated_description' => 'Novela distópica situada en Airstrip One.',
+        ]);
+
+        Translation::create([
+            'book_id' => 1,
+            'language_id' => 4,
+            'translated_title' => '1984 (Hungarian)',
+            'translated_description' => 'Disztópikus regény, amely Airstrip One-ban játszódik.',
+        ]);
+
+        Translation::create([
             'book_id' => 2,
             'language_id' => 2,
             'translated_title' => 'Harry Potter à l\'école des sorciers',
             'translated_description' => 'Le début du voyage d\'un jeune sorcier.',
+        ]);
+
+        Translation::create([
+            'book_id' => 2,
+            'language_id' => 3,
+            'translated_title' => 'Harry Potter y la piedra filosofal',
+            'translated_description' => 'El comienzo del viaje de un joven mago.',
+        ]);
+
+        Translation::create([
+            'book_id' => 2,
+            'language_id' => 4,
+            'translated_title' => 'Harry Potter és a bölcsek köve',
+            'translated_description' => 'Egy fiatal varázsló utazásának kezdete.',
         ]);
     }
 }

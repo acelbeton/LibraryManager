@@ -16,5 +16,6 @@ class LanguagesSeeder extends Seeder
         Language::create(['language_name' => 'English', 'language_code' => 'en']);
         Language::create(['language_name' => 'French', 'language_code' => 'fr']);
         Language::create(['language_name' => 'Spanish', 'language_code' => 'es']);
+        Language::create(['language_name' => 'Hungarian', 'language_code' => 'hu']);
     }
 }

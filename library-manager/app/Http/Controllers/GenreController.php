@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Genre;
 use App\Models\GenreTranslation;
 use App\Models\Language;
+use App\Traits\GetCachedData;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
@@ -14,6 +15,9 @@ use Illuminate\Support\Facades\Validator;
 
 class GenreController extends Controller
 {
+
+    use GetCachedData;
+
     public function index() {
         try {
             $genres = Genre::all();
@@ -38,6 +42,7 @@ class GenreController extends Controller
                 'name' => $validatedData['name'],
             ]);
 
+            $this->refreshCache('genres', Genre::class);
             $genres = Genre::all();
             $languages = Language::all();
             $genreTranslations = GenreTranslation::all();
@@ -70,6 +75,7 @@ class GenreController extends Controller
             $genre = Genre::findOrFail($validatedData['genre_id']);
             $genre->name = $validatedData['name'];
             $genre->save();
+            $this->refreshCache('genres', Genre::class);
             $genres = Genre::all();
             $languages = Language::all();
             $genreTranslations = GenreTranslation::all();
@@ -108,13 +114,15 @@ class GenreController extends Controller
                 return response()->json([
                     'success' => false,
                     'html' => $html,
-                    'errors' => 'This genre cannot be deleted because it is associated with one or more books.'
+                    'error' => 'This genre cannot be deleted because it is associated with one or more books.'
                 ], 422);
             }
 
             $genre->delete();
 
             GenreTranslation::where('genre_id', $request->id)->delete();
+
+            $this->refreshCache('genres', Genre::class);
 
             $genres = Genre::all();
             $languages = Language::all();

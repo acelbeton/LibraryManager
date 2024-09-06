@@ -19,5 +19,12 @@ class BookKeywordsSeeder extends Seeder
         BookKeyword::create(['book_id' => 1, 'keyword_id' => 4]);
         BookKeyword::create(['book_id' => 2, 'keyword_id' => 5]);
         BookKeyword::create(['book_id' => 2, 'keyword_id' => 6]);
+        BookKeyword::create(['book_id' => 1, 'keyword_id' => 7]);
+        BookKeyword::create(['book_id' => 2, 'keyword_id' => 8]);
+        BookKeyword::create(['book_id' => 2, 'keyword_id' => 9]);
+        BookKeyword::create(['book_id' => 1, 'keyword_id' => 10]);
+        BookKeyword::create(['book_id' => 2, 'keyword_id' => 11]);
+        BookKeyword::create(['book_id' => 2, 'keyword_id' => 12]);
+
     }
 }

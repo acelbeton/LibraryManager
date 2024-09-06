@@ -25,17 +25,33 @@
 
 .table-custom {
     border-collapse: collapse;
-    margin-top: 2rem;
-    border: 1px solid $border-color;
+    border: 1px solid $table-border-color;
     width: 100%;
-    margin: 0 auto; // This centers the table within its container
-    max-width: 100%; // Ensures the table does not overflow
+    margin: 2rem auto;
+    overflow-y: auto;
+    max-width: 100%;
 
-    @include respond-to(small) {
-        display: block;
+    @media (min-width: 1200px) {
+        display: table;
         width: 100%;
+        overflow-x: visible;
+        white-space: normal;
+    }
+
+    @media (min-width: 769px) and (max-width: 1800px) {
+        display: block;
         overflow-x: auto;
         white-space: nowrap;
+        width: 100%;
+        margin-right: 0;
+    }
+
+    @media (max-width: 768px) {
+        display: block;
+        white-space: nowrap;
+        overflow-x: auto;
+        width: 100%;
+        margin-right: 0;
     }
 
     thead {
@@ -49,7 +65,7 @@
             font-size: 1.1rem;
             border-bottom: 2px solid darken($primary-color, 10%);
 
-            @include respond-to(small) {
+            @media (max-width: 768px) {
                 padding: 0.75rem;
                 font-size: 1rem;
             }
@@ -72,7 +88,7 @@
         td {
             padding: 1rem;
             font-size: 1.1rem;
-            border-bottom: 1px solid $border-color;
+            border-bottom: 1px solid $table-border-color;
 
             &.text-center {
                 text-align: center;
@@ -82,7 +98,7 @@
                 text-align: right;
             }
 
-            @include respond-to(small) {
+            @media (max-width: 768px) {
                 padding: 0.75rem;
                 font-size: 1rem;
             }
@@ -91,12 +107,12 @@
 
     img {
         border-radius: 4px;
-        border: 1px solid $border-color;
+        border: 1px solid $table-border-color;
         max-width: 100%;
         width: 250px;
         height: auto;
 
-        @include respond-to(small) {
+        @media (max-width: 768px) {
             width: 100%;
         }
     }
@@ -109,7 +125,7 @@
         border-radius: 4px;
         margin-right: 0.25rem;
 
-        @include respond-to(small) {
+        @media (max-width: 768px) {
             font-size: 0.75rem;
         }
     }

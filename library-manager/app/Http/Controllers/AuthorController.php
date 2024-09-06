@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Author;
+use App\Traits\GetCachedData;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
@@ -11,6 +12,8 @@ use Illuminate\Support\Facades\Validator;
 
 class AuthorController extends Controller
 {
+    use GetCachedData;
+
     public function index() {
         try {
             $authors = Author::all();
@@ -33,6 +36,7 @@ class AuthorController extends Controller
             ]);
 
             $authors = Author::all();
+            $this->refreshCache('authors', Author::class);
 
             $html = view('partials.authorsList', compact('authors'))->render();
 
@@ -64,6 +68,7 @@ class AuthorController extends Controller
             $author->bio = $validatedData['bio'];
             $author->save();
             $authors = Author::all();
+            $this->refreshCache('authors', Author::class);
             $html = view('partials.authorsList', compact('authors'))->render();
             return response()->json(['success' => true, 'html' => $html, 'message' => 'Author updated successfully']);
         }  catch (ModelNotFoundException $e) {
@@ -97,13 +102,14 @@ class AuthorController extends Controller
                 return response()->json([
                     'success' => false,
                     'html' => $html,
-                    'errors' => 'This author cannot be deleted because it is associated with one or more books.'
+                    'error' => 'This author cannot be deleted because it is associated with one or more books.'
                 ], 422);
             }
 
             $author->delete();
 
             $authors = Author::all();
+            $this->refreshCache('authors', Author::class);
             $html = view('partials.authorsList', compact('authors'))->render();
 
             return response()->json(['success' => true, 'html' => $html, 'message' => 'Author deleted successfully']);
