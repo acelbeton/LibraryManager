@@ -7,6 +7,7 @@
   1. npm install
   1. cp .env.example .env
   1. php artisan key:generate
+  1. php artisan storage:link
   1. php artisan migrate --seed
   1. npm run dev
   1. php artisan serve
