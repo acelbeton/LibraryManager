@@ -29,7 +29,7 @@ class LanguageController extends Controller
         try {
             $validatedData = $request->validate([
                 'language_name' => 'required|max:255',
-                'language_code' => 'nullable|string'
+                'language_code' => 'nullable|string|max:5',
             ]);
 
             Language::create([
@@ -56,7 +56,7 @@ class LanguageController extends Controller
         $validator = Validator::make($request->all(), [
             'language_id' => 'required|exists:languages,id',
             'language_name' => 'required|string|max:255',
-            'language_code' => 'nullable|string'
+            'language_code' => 'nullable|string|max:5'
         ]);
 
         if ($validator->fails()) {
