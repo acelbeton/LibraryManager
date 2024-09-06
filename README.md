@@ -2,7 +2,7 @@
 
 ## Installation Guide:
   1. git clone https://github.com/acelbeton/LibraryManager.git
-  1. cd LibraryManager/library-manager
+  1. cd library-manager
   1. composer install
   1. npm install
   1. cp .env.example .env
