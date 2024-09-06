@@ -24,7 +24,13 @@ class GenreTranslationController extends Controller
                 'translated_name' => 'required|string|max:255',
             ]);
 
-            GenreTranslation::create($validatedData);
+            GenreTranslation::updateOrCreate(
+                [
+                    'genre_id' => $validatedData['genre_id'],
+                    'language_id' => $validatedData['language_id']
+                ],
+                ['translated_name' => $validatedData['translated_name']]
+            );
 
             $this->refreshCache('genreTranslations', GenreTranslation::class);
 
