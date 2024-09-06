@@ -172,6 +172,7 @@ $(document).ready(function () {
             url: `/genres/${genreId}/translations/${languageId}`,
             method: 'GET',
             success: function (response) {
+                $('#translation-id').val(response.translation ? response.translation.id : '');
                 $('#translated_name').val(response.translation ? response.translation.translated_name : '');
             },
             error: function (xhr) {
