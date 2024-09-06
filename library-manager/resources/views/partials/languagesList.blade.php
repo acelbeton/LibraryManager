@@ -13,7 +13,7 @@
             <td>{{ $language->language_code }}</td>
             <td>
                 <button class="btn btn-warning update-language"
-                        data-id="{{ $language->id }}"
+                        data-language_id="{{ $language->id }}"
                         data-language_name="{{ $language->language_name }}"
                         data-language_code="{{ $language->language_code }}"
                         data-bs-toggle="modal" data-bs-target="#updateLanguageModal">
